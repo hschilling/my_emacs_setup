@@ -1,0 +1,45 @@
+This directory has elisp code for ttn environment.
+Most useful code is autoloaded.  See admin.el for more info.
+
+Below is reformatted "grep -n Description *.el" and here is code that does it:
+
+;; Make sure buffer is writeable, then put cursor [HERE] and do
+;; `M-x eval-defun RET'.  Don't forget to save!
+(save-excursion
+  (re-search-forward "^-+\n")
+  (insert "# " (file-name-nondirectory (buffer-file-name)) " ends here\n")
+  (delete-region (point) (point-max))
+  (goto-char (match-end 0))
+  (shell-command "grep -n Description *.el" t)
+  (when noninteractive
+    (count-lines-region (point) (point-max)))
+  (while (re-search-forward ".el:[0-9]+:;+ Description:" nil t)
+    (replace-match "\n") (end-of-line) (insert "\n")))
+
+;; Do not erase this line.  Edits below this line will be lost.
+------------------------------------------------------------------------------
+admin
+ Top level package management (for developer).
+
+do-it-now
+ No definitions, just actions.
+
+emacs-vers
+ Which emacs are we using anyway?!  "One" True Editor, ha!
+
+hooks
+ Hooks: Load time, major-mode and advice.
+
+if-window-system
+ Setup applicable if `window-system' non-nil.
+
+keys
+ Global and specific keymap bindings.
+
+loaddefs
+ Auto-updated autoloads for everything.
+
+tuckey-holdcursor
+ User interface layer for `scroll-in-place'.
+
+# README ends here

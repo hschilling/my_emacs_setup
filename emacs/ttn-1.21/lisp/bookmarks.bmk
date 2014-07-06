@@ -1,0 +1,25 @@
+;;;; Emacs Bookmark Format Version 1 ;;;;
+;;; This format is meant to be slightly human-readable;
+;;; nevertheless, you probably don't want to edit it.
+;;; -*- End Of Bookmark File Format Version Stamp -*-
+(("elisp(L): dired-aux.el"
+  ((filename . "/usr/share/emacs/20.2/lisp/dired-aux.el")
+   (front-context-string . ";;; dired-aux.el")
+   (rear-context-string)
+   (position . 1)))
+ ("elisp(L): vc-hooks.el"
+  ((filename . "/usr/share/emacs/20.2/lisp/vc-hooks.el")
+   (front-context-string . "    (if (eq mast")
+   (rear-context-string . "ks file)) lock)\n")
+   (position . 21630)))
+ ("scheme: mock-k.scm"
+  ((filename . "/usr/local/share/guile/site/mock-tk.scm")
+   (front-context-string . ";;; Copyright (C")
+   (rear-context-string)
+   (position . 1)))
+ ("ulimit!"
+  ((filename . "/home/ttn/.bashrc")
+   (front-context-string . "ulimit -c 0				#")
+   (rear-context-string . "h >& /dev/null\n\n")
+   (position . 296)
+   (annotation))))

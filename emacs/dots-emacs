@@ -1,0 +1,523 @@
+;;; .emacs --- init file for joelh@{detlev,pollock}
+
+;; Copyright (C) 1994 Joel Ray Holveck
+
+;; Author: Joel Ray Holveck <joelh@pollock.math.swt.edu>
+;; Maintainer: Joel Ray Holveck <joelh@pollock.math.swt.edu>
+;; Created: 15 Feb 1994
+;; Version: $Id: emacs,v 1.1 1994/12/06 04:51:42 joelh Rel $
+;; Distribution version: 3.00 (defined inline)
+;; Keywords: startup init customization
+;; Bogus-Bureaucratic-Cruft: Why are you reading this?
+
+;; This file is *not* part of GNU Emacs.
+
+;; This file is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 2, or (at your option)
+;; any later version.
+
+;; This file is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this file; see the file COPYING.  If not, write to
+;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+
+;;; Commentary:
+
+;; This is the initialization file used by joelh@{detlev,pollock}.  It
+;; was designed with the i486-sun-solaris2 and the mips-sgi-irix4.0.5
+;; in mind under GNU Emacs 19.22 and later.  It requires GNU Emacs 19,
+;; and some features require versions higher than 19.22 (dired-x, for
+;; example).  However, no harm will come if these features are not
+;; present.
+
+;; Because this is designed for Joel, there are many variables you
+;; might want to change.  Search for "joelh", "tamu", and "swt"; the
+;; changes should be in the vicinity of these.
+
+;;; Change log:
+;; See file ChangeLog
+
+;;; To do:
+;    Process FIXME's
+;    Document everything (again)
+;    Bind M-A-C-S-kp-subtract to play "Yankee Doodle" (really!)
+;    Set up list of required files
+;    Move C defuns into a separate file
+;
+
+
+
+;;; Code:
+
+;;;; Set up vars and functions for use by this file
+
+;;; Variables
+
+(defvar preferred-path "/usr/local/"
+  "Used by ~joelh/.emacs for where to find its files.
+Must end in a delimiter.")		; FIXME delim shouldn't be necc
+
+(defvar preferred-exec-path (concat preferred-path "bin/")
+  "Used by ~joelh/.emacs for where to find certain files.
+Must end in a delimiter.")		; FIXME delim shouldn't be necc
+
+(defvar use-metamail-p (file-executable-p
+		      (concat preferred-exec-path "metamail"))
+  "Used by ~joelh/.emacs to determine if metamail should be used or not.
+~joelh/.emacs must be rerun to have its value have any effect.")
+
+(defconst emacs-init-file-id "$Id: emacs,v 1.1 1994/12/06 04:51:42 joelh Rel $"
+  "RCS identifier")
+
+(defconst emacs-init-file-version "3.00"
+  "Version number of ~joelh/.emacs
+
+This will be two octets if this is a distribution version, four if
+it is a development version.
+
+The the third octet (if it exists) indicates the development site:
+  0: detlev
+  1: pollock
+  2: cs8
+  3: kendermore
+ 32-126: As registered with joelh
+127: unknown")
+
+;; joelh keeps a registry of development sites for the users the series
+;; is distributed to.  See README for details.
+
+(defconst emacs-init-file-maintainer-address
+  "joelh@pollock.math.swt.edu"
+  "Developer for ~joelh/.emacs
+
+Not real reliable, actually.
+Note that this is the mailing address; the reference address may differ.")
+
+;;; Functions
+
+(defun emacs-init-file-version ()
+  "String describing version of ~joelh/.emacs used"
+  (concat "~joelh/.emacs v" emacs-init-file-version " by joelh@detlev"))
+
+(defun c-define-out-region (start end)
+  "Inserts \"#ifdef 0\" and \"#endif\" around the current region on new lines.
+If called non-interactively, START and END are used in the current buffer.
+
+It is interesting to note that if END > START (which, when called
+interactively, doesn't happen), the region is exempted from a previous
+c-define-out-region including that region.  c-define-in-or-out-region
+takes advantage of this."
+  (interactive "r")
+  (save-excursion
+    (set-mark end)			; Save the end of the region.
+					; FIXME end should be saved as marker
+					; Not urgent because, unlike the
+					; implications of the emacs docs,
+					; save-excursion saves mark.
+    (goto-char start)
+    ;; If there's not space reserved for #ifdef 0, reserve it.
+    ;; This is currently so that if the region begins directly after a
+    ;; newline, then there will be a \n\n#ifdef0\n here.  If the buffer
+    ;; starts in the middle of the line (who knows why?) only a \n#ifdef 0\n
+    ;; will be inserted.
+    (if (>= (- (point) 2) (point-min))	; Don't compare if not enough space
+	(if (not (string-equal "\n\n" 
+			       (buffer-substring (- (point) 2) (point))))
+	    (insert "\n")))
+    (insert "#ifdef 0")
+    ;; Now insert a trailing newline, if necessary.
+    (if (<= (+ (point) 1) (point-max))
+	(if (not (string-equal "\n" (buffer-substring (point) (+ (point) 1))))
+	    (insert "\n")))
+    ;; Now insert the #endif.  It intends to end up as \n#endif\n\n.
+    (goto-char (mark))
+    ;; A range check is not necessary here; the #ifdef exists now.
+    (if (not (string-equal "\n" (buffer-substring (- (point) 1) (point))))
+	(insert "\n"))
+    (insert "#endif")
+    (if (<= (+ (point) 2) (point-max))
+	(if (not (string-equal "\n\n"
+			       (buffer-substring (point) (+ (point) 2))))
+	    (insert "\n")))
+    ))
+
+(defun c-define-in-or-out-region (start end &optional swap)
+  "Defines out the region or, with an argument, defines it back in.
+If SWAP is non-nil, then the region is defined in by bracketing it with
+\"#endif\"...\"#ifdef 0\".  Otherwise, the region is defined out by
+bracketing it with \"#ifdef 0\"...\"#endif\".
+
+This uses c-define-out-region and the feature described in its
+documentation."
+  (interactive "r\nP")
+  (if swap
+      (c-define-out-region (max start end) (min start end))
+    (c-define-out-region (min start end) (max start end))))
+
+(defun emacs-init-file-submit-bug-report ()
+  "Submit via mail a bug report on ~joelh/.emacs"
+  (interactive)
+  (require 'reporter)
+  (and (y-or-n-p "Do you really want to submit a report on ~joelh/.emacs? ")
+       (reporter-submit-bug-report
+	emacs-init-file-maintainer-address
+	(concat "~joelh/.emacs " emacs-init-file-version)
+	'(emacs-init-file-id))))
+
+;;;; Set up emacs itself like I like it
+;;; Emacs stuff                         ; Huh?
+(server-start)				; Activate the emacs server support
+					; FIXME Need to finish making edit
+					;       csh script
+(setq load-path (cons "~/lib/emacs" load-path))
+					; FIXME should be in .login
+					; but that wouldn't include defaults
+;; (add-hook 'after-init-hook		; See elisp.texi <- Where?
+;;	  (lambda () (setq debug-on-error t)))
+
+;;; Mode line
+;; If I'm root, say so!
+(if (eq (user-uid) 0)
+    (setq-default mode-line-buffer-identification
+		  (purecopy '("r-Emacs: %12b"))))
+(if (>= baud-rate 9600)
+    (line-number-mode 1))
+(setq display-time-24hr-format t)
+(display-time)
+
+;;; Display stuff
+(if (not 
+     (or window-system
+	 (string-equal (getenv "TERM") "screen")))
+					; FIXME should be in term-init file
+    (setq visible-bell t))
+
+;;; Non-idiot stuff
+(put 'eval-evaluation 'disabled nil)	; Disable query on M-ESC
+					; FIXME also at end
+(setq inhibit-startup-message t)
+
+;;; File stuff
+(setq find-file-existing-other-name t)
+(setq version-control t)
+(setq dired-kept-versions 5)
+(setq trim-versions-without-asking t)
+(setq kept-old-versions 2)
+(setq kept-new-versions 3)
+(setq require-final-newline 'maybe)
+
+;;; X stuff
+(cond (window-system
+       (require 'avoid)
+       (mouse-avoidance-mode 'animate)))
+(cond ((and window-system (fboundp 'set-face-font))
+       (set-face-font 'modeline "9x15")
+       (set-face-foreground 'modeline "white")
+       (set-face-background 'modeline "black")))
+;; in .Xdefaults, should have
+;;   emacs.font: -adobe-courier-medium-r-normal--*-140-*-*-m-*-iso8859-1
+;; or other preferred font.
+
+;;; Abbrev stuff
+(setq abbrev-all-caps t)
+(quietly-read-abbrev-file)
+(setq-default abbrev-mode t)
+(add-hook 'kill-emacs-hook
+	  (lambda () (write-abbrev-file abbrev-file-name)))
+(require 'assoc)
+(adelete 'minor-mode-alist 'abbrev-mode)
+
+;;; Global keyboard definitions
+;; (keyboard-translate ?\C-h ?\C-?)	; For brain-dead keyboards
+;; Mode bindings:
+;;   A-c, C-c c, A-;  : c-define-in-or-out-region
+(global-set-key [f1] 'rmail)
+(global-set-key [f3] 'repeat-complex-command)
+(global-set-key [?\A-s] 'save-some-buffers)
+(global-set-key [?\C-c ?s] 'save-some-buffers)
+(global-set-key [f7] 'save-some-buffers)
+(global-set-key [?\A-c] 'compile)
+(global-set-key [?\C-c ?c] 'compile)
+(global-set-key [f9] 'compile)
+(global-set-key [?\A-f] 'new-frame)
+(global-set-key [?\C-c ?a] 'replace-regexp)
+(global-set-key [A-?\C-s] 'gud-step)
+(global-set-key [A-?\C-n] 'gud-next)
+(global-set-key [?\C-c ?n] 'gud-next)
+(global-set-key [M-A-C-S-kp-subtract] 'yow)
+(global-set-key [C-c b] 'bury-buffer)
+(global-set-key [A-b] 'bury-buffer)
+(global-set-key [M-s] 'isearch-backward)
+(global-set-key [C-c w] 'kill-ring-save)
+
+;;; File stamping
+(add-hook 'write-file-hooks 'ask-to-update-copyright)
+(add-hook 'write-file-hooks 'time-stamp)
+(setq 
+ time-stamp-format 
+ '(time-stamp-dd-mon-yy time-stamp-hh:mm:ss
+			user-login-name "@" time-stamp-mail-host-name))
+
+
+
+;;;; Configure mail stuff
+
+;;; General mail variables
+(setq mail-default-reply-to "joelh@pollock.math.swt.edu")
+(setq mail-default-headers "Full-name: Joel Ray Holveck
+Precedence: First-class\n")		; Some roots don't get my name
+					; right... Go figure.
+(setq mail-signature t)
+(setq mail-self-blind t)
+(setq mail-yank-ignored-headers
+      (concat mail-yank-ignored-headers 
+	      "\\|^x-face:\\|^x-planation:\\|^sender:\\|^reply-to:"
+	      "\\|^mime-version:\\|^x-mailer:\\|^content-"))
+					; note: doesn't apply to rmail
+					; Does this let MIME DTRT?
+
+;; Add yow
+(add-hook 'mail-setup-hook
+	  (lambda ()
+	    (let ((orig-point (point)) body-point start-point)
+	      (save-excursion
+		(goto-char (point-min))
+		(cond
+		 ((search-forward-regexp ; find body text
+		   "^--text follows this line--$"
+		   (point-max) t)
+		  (forward-char 1)	; get off of div line
+		  (setq body-point (point))
+		  (insert (yow) "\n\n\n\n")
+		  (previous-line 2)
+		  (setq start-point (point))) ; Can't push mark here
+		 (t
+		  (error "Body text not found"))))
+	      (cond
+	       ((= orig-point body-point)
+		(goto-char start-point)) ; Move point to a convienent spot
+	       (t
+		(push-mark start-point))) ; For convenience
+	      )))
+; (setq mail-interactive t)  ; Uncomment for debugging sendmail
+
+
+;;; RMail, the most-used non-programming mode in Emacs
+;; Activate Metamail if we should
+;; Note that the if is reevaluated each time.  This is intentional.
+(add-hook 'rmail-show-message-hook
+	  (function (lambda ()
+		      (if use-metamail-p
+			  (lambda ()
+			    (require 'mmsetup) ; Load my METAMAIL setup file
+			    (rmail-check-content-type)
+			    ;; Get some other headers off
+			    (setq rmail-ignored-headers
+				  (concat rmail-ignored-headers 
+"\\|^x-ph:\\|^mime-version:\\|^content-transfer-encoding:\\|^content-length:\\|^in-reply-to:")))))))
+
+(put 'rmail-edit-current-message 'disabled t) ; I keep hitting w by misteak!
+
+;;; Customize Gnus
+;; Before NNTP connect
+;;  (setq gnus-local-domain "tamu.edu")
+;;  (setq gnus-default-nntp-server "news.tamu.edu"))))
+;; This stuff should work from environment or from site-init.
+;; After NNTP connect
+;;  (setq gnus-auto-mail-to-author t)	; Annoying!
+(setq gnus-novice-user t)		; Not a nusance... yet
+(setq gnus-signature-file "~/.signature.news")
+(setq gnus-show-mime use-metamail-p)
+(setq gnus-ignored-newsgroups "biz..*")
+
+;;; Configure Supercite
+;; First, set up the hooks to load Supercite
+(add-hook 'mail-citation-hook 'sc-cite-original)
+(setq news-reply-header nil)
+;; Next, the citation preferances
+(setq sc-nested-citation-p t)		; Common on the net
+(setq sc-fixup-whitespace-p t)		; Make it look good
+(setq sc-preferred-attribution-list 
+      '("sc-lastchoice" "x-attribution" "sc-consult" "emailname"))
+;; Supercite gobbles the whitespace after my yow
+(add-hook 'sc-post-hook
+	  (lambda ()
+	    (save-excursion
+	      (previous-line 1)
+	      (insert "\n"))))
+(setq sc-citation-delimiter-regexp "[\]>}|:#/]+")
+;; Give it my nicknames
+(setq sc-attrib-selection-list
+      '(("sc-from-address" (
+			    ("crispy@.*\.rice\.edu" . "Cris")
+			    ("Kellie_Maxwell@(.*\.)?baylor\.edu" "Max")
+			    ("creed@.*" . "Reed")
+			    ("smt1275@.*\.tamu\.edu" . "Scotty")
+			    ("eag5410@.*\.tamu\.edu" . "Git")
+			    ("austing@.*\.tamu\.edu" . "Git")
+			    ("eeh4805@.*\.tamu\.edu" . "Erin")))))
+;; Finally, set up to load Supercite when needed
+(autoload 'sc-cite-original	"supercite" "Supercite 3.1" t)
+(autoload 'sc-submit-bug-report "supercite" "Supercite 3.1" t)
+
+
+
+;;;; Customize languages
+;;; C, my language of choice
+(setq c-brace-offset -2)		; K&R indentation
+;; Set up to use cccp, etc. if availible.
+(setq c-macro-preprocessor
+      (eval (cons (function or)
+		  (mapcar (lambda (foo) 
+			    (apply 
+			     (lambda (fname &optional usename path)
+			       (if (not usename)
+				   (setq usename fname))
+			       (if (not path)
+				   (setq path preferred-exec-path))
+			       (if (file-executable-p
+				    (concat path fname))
+				   (concat path usename)))
+			     foo))
+			  '(("cccp") ("cpp")
+			    ("gcc" "gcc -E -C") ("cpp" "cpp" "/lib/"))
+			  ))))		; FIXME should use defaults
+;; Font-lock automatically
+(if window-system
+    (add-hook 'c-mode-hook 
+	      '(lambda () (font-lock-mode 1))))
+;; Add keymaps
+(define-key c-mode-map [A-\;] 'c-define-in-or-out-region)
+(define-key c-mode-map [?\C-c d] 'c-define-in-or-out-region)
+(define-key c-mode-map [A-d] 'c-define-in-or-out-region)
+
+;;; Emacs-Lisp
+(if window-system
+    (add-hook 'emacs-lisp-mode-hook 
+	      '(lambda () (font-lock-mode 1))))
+;; FIXME This looks like crap; needs syntax cleaning on doc strings
+(define-key emacs-lisp-mode-map [A-M-x] 'eval-region)
+
+;;; Compile
+(if (locate-library "compile-dir")
+    (add-hook 'compile-hook
+	      (lambda ()
+		(require 'compile-dir))))
+(setq compile-dir nil)			; FIXME shouldn't have to do this
+					; This is actually a problem w/
+					; compile-dir.el, not .emacs.
+
+
+
+;;;; Customize dired-x
+(if (locate-library "dired-x")		; Only if dired-x exists!
+    (progn
+      (define-key global-map "\C-x\C-j" 'dired-jump)
+      (define-key global-map "\C-x4\C-j" 'dired-jump-other-window)
+      (autoload 'dired-jump "dired" "\
+Jump to dired buffer corresponding to current buffer.
+If in a file, dired the current directory and move to file's line.
+If in dired already, pop up a level and goto old directory's line.
+In case the proper dired file line cannot be found, refresh the dired
+vbuffer and try again." t nil)
+
+      (autoload 'dired-jump-other-window "dired" "\
+Like \\[dired-jump] (dired-jump) but in other window." t nil)
+
+      (load "dired-x")
+      (setq dired-omit-files-p t)
+      (setq dired-omit-files
+	    (concat dired-omit-files "\\|~$\\|^RCS$\\|,v$")))
+  (message nil))			; remove dired-x doesn't exist msg
+
+
+
+;;;; Customize other minor major modes :-)
+;;; Text mode (has many descendants)
+(add-hook 'text-mode-hook
+	  (function (lambda ()
+		      (auto-fill-mode 1)
+		      )))
+;;; Calendar mode
+(setq calendar-time-display-form
+      '(24-hours ":" minutes
+		 (if time-zone " (") time-zone (if time-zone ")")))
+(setq hebrew-holidays nil)
+(setq islamic-holidays nil)
+
+;;; Man-mode
+(setq Man-notify 'polite)		; May want to use quiet for Terry
+; FIXME Auto-sections should be fixed.
+; Note that Man-specified-section-options is in site-init/default.el on
+; detlev.
+
+
+
+;;;; Other strange things
+;;; VC (RCS, SCCS)
+(setq vc-initial-comment t)
+(setq vc-command-messages t)
+
+;;;; Stuff for particular computers
+(cond					; FIXME should be an apply
+;;; detlev
+      ((string-equal (system-name) "detlev")
+       nil)				; For future expantion
+;;; pollock
+      ((string-equal (system-name) "pollock.math.swt.edu")
+       (setq sendmail-program "~/sendmail.jrh.sh") ; Sorry, Don!
+       (setq mail-default-headers
+	     (concat mail-default-headers "BCC: joelh@dali\n"))
+					; haz's meddling... yet again...
+       (setq mail-self-blind nil))
+)
+
+
+;;;; Stuff that has to be at the end
+;;; FIXMEs that don't work at the beginning
+(put 'eval-expression 'disabled nil)	; Has this been fixed?
+;;; In memory of Lewis Carroll
+(cond ((and (not noninteractive)
+	    ;; Don't clobber a non-scratch buffer if init file
+	    ;; has selected it.
+	    (string= (buffer-name) "*scratch*")
+	    (not (input-pending-p)))
+       (unwind-protect
+	   (progn
+	     (insert (emacs-version)
+		     "\nCopyright (C) 1993 Free Software Foundation, Inc.\n\n"
+		     (emacs-init-file-version)
+		     "\nReleased to the public domain")
+	     (insert-char 10 3)
+	     (if
+		 (file-readable-p "~/etc/walrus")
+		 (insert-file-contents "~/etc/walrus")
+	       ;; FIXME should underline the appropriate parts of walrus
+	       (insert "walrus"))
+	     (set-buffer-modified-p nil)
+	     (message "walrus")
+	     (sit-for 120))
+	 (save-excursion
+	   ;; In case the Emacs server has already selected
+	   ;; another buffer, erase the one our message is in.
+	   (set-buffer (get-buffer "*scratch*"))
+	   (erase-buffer)
+	   (set-buffer-modified-p nil)))))
+
+;;; Clean up
+(garbage-collect)
+
+;;; Set this file to outline mode
+
+; Local variables:
+; outline-regexp:";;;+"
+; mode: emacs-lisp
+; mode: outline-minor
+; end: 
+
+;;; end of ~joelh/.emacs

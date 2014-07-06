@@ -1,0 +1,237 @@
+This directory has "low-stress" code.
+Most useful code is autoloaded.  See ../admin.el for more info.
+
+Below is reformatted "grep -n Description *.el" and here is code that does it:
+
+;; Make sure buffer is writeable, then put cursor [HERE] and do
+;; `M-x eval-defun RET'.  Don't forget to save!
+(save-excursion
+  (re-search-forward "^-+\n")
+  (insert "# " (file-name-nondirectory (buffer-file-name)) " ends here\n")
+  (delete-region (point) (point-max))
+  (goto-char (match-end 0))
+  (shell-command "grep -n Description *.el" t)
+  (when noninteractive
+    (count-lines-region (point) (point-max)))
+  (while (re-search-forward ".el:[0-9]+:;+ Description:" nil t)
+    (replace-match "\n") (end-of-line) (insert "\n")))
+
+;; Do not erase this line.  Edits below this line will be lost.
+------------------------------------------------------------------------------
+adhoc
+ Functions useful for .adhoc scripts.
+
+ae
+ Auto-editing amusement: watch Emacs spaz out!
+
+another-line
+ Copy current line, incrementing numbers.  Bus-friendly.  :->
+
+backward-page-ignore-narrow
+ Like `backward-page', except ignores page narrowing.
+
+bg-shell-command
+ Run a shell command in the background, renaming buffer.
+
+bnum
+ Convert a number to a binary string.  Also a list variant.
+
+border
+ Given a list and break element, return "border" list.
+
+brb
+ "Be right back" to terminal.  Uses alternative notification.
+
+browse-console-fonts
+ Browse console fonts.
+
+c-macro-expand-and-clean
+ Expand a region of C code into another buffer, then clean it.
+
+ch-rcs-state
+ Change the RCS "state" of a file.
+
+check-calendar-file
+ Old (probably rotten) code for calendar munging.
+
+clone-frame
+ Commands to clone the current frame.
+
+delayed-checkin
+ Provide system for delayed checkin.
+
+describe-this
+ Describe args, but w/o very good documentation.
+
+dired-compile-last-change-log
+ With dired-under-vc, compile a last-change log to a buffer.
+
+dired-wipe-unseeables
+ In dired, remove lines w/ unseeable files/dirs.
+
+emacs-uptime
+ Give Emacs' uptime and some other stats in the modeline.
+
+eval-last-page
+ Support for AHM.  :->
+
+find-many-files
+ Slurp all files in some dir, given a regular expression.
+
+fortunate-loop
+ Fortune cookie factory!  :->
+
+forward-page-ignore-narrow
+ Like `forward-page', except ignores page narrowing.
+
+from
+ Basically, "egrep '^From ' $MAIL" (note the SPC).
+
+give-me-a-scratch-buffer-now
+ Find *scratch* buffer; put it in lisp-interaction-mode.
+
+gzip-or-gunzip-from-dired
+ From dired, gzip or gunzip a file.  Probably bound to `z'.
+
+idx-of
+ Return zero-based index of item in list.  Use `equal'.
+
+insert-separator
+ Insert code separator comment in mode-specific ways.  Fancy.
+
+insert-time-stamp
+ Insert time stamp string.  See source for format.
+
+line-at-point
+ Return current line as a string (w/o terminating newline).
+
+ln-mode
+ Line-numbering mode.
+
+locate
+ Interface to locate(1).
+
+macintosh-word-cleanup
+ Replace Macintosh "Word" document crap w/ text.
+
+mail-this-buffer
+ Simple keyboard macro to prepare mail buffer from current.
+
+multi-shell
+ Modification of ``shell'' allows multiple shells w/ prefix.
+
+munge-root-window
+ Munge root window in luser-selectable ways.
+
+my-tags
+ Set up the prefered environment for etags.
+
+my-term-fixups
+ Fix keys for vt220.
+
+narrowed-to-page-p
+ Return nil if not narrowed to page boundaries.
+
+phone
+ Issue shell command "phone NAME-REGEXP".
+
+ping
+ Ping a host infinitely, with variable interval.
+
+pll-spreadsheet
+ Interactive spreadsheet for PLL numbers tuning.
+
+praise
+ Drop-in replacement for praise.el at large.
+
+previous-buffer
+ Switch to previous buffer in buffer list.
+
+print-buffer-local-variables
+ Print buffer-local variables and count them, too.
+
+print-previous-revision
+ Print previous revision of a version-controlled file.
+
+reset-emacs-font
+ Simple keyboard macro to reset Emacs font via ~/.Xdefaults.
+
+reset-x-bell
+ Simple kbd macro to reset the X server bell via ~/.xsession.
+
+revert-some-buffers
+ For each file-related buffer, do `revert-buffer'.
+
+run-guile
+ Provide `run-guile', `run-guile-tcltk' and `run-guile-gtk'.
+
+saved-shell-command
+ Do a shell command, asking for luser mercy on output.
+
+scroll-LR-by-20
+ Horizontal scrolling support used by many modes hooks.
+
+set-font-at-point
+ Set font at cursor position, useful w/ xlsfonts(1) output.
+
+set-keys
+ Bind many keys in a keymap, not just one.
+
+source-wrap-c++-style
+ Put RCS tags around C++.
+
+source-wrap-elisp-style
+ Put RCS tags around elisp.
+
+source-wrap-shell-style
+ Put RCS tags around sh(1)-like source.
+
+source-wrap
+ Put RCS tags around source.
+
+split-into-3-windows
+ Split frame into three windows.  Prefix arg changes axis.
+
+strip
+ Strip whitespace.  Inspired by GNU `make' func w/ same name.
+
+su-shell
+ Get a superuser shell using `multi-shell'.  Password secure.
+
+surround-w-if-block
+ Surround region w/ C preprocessor block w/ luser-chosen tag.
+
+symbol-at-point
+ Return symbol at point as a string.
+
+toggle-vars
+ Toggle certain variables.
+
+ttn-base64
+ Funcs to handle text representing base64 MIME encoding.
+
+turn-on-gnuserv
+ Set some variables, then turn on gnuserv.
+
+turn-on-hilit19
+ Set some variables and then turn on hilit19.
+
+turn-on-mic-paren
+ Turn on mic-paren, a fancy paren-fun package by mic.
+
+turn-on-mouse-avoidance-mode
+ Turns on `mouse-avoidance-mode' amusement.
+
+word-at-point
+ Return word at point as a string.
+
+xmsg
+ Wrapper for old X program xmessage(1).
+
+xscreensaver-command
+ Funcs to interact w/ xscreensaver(1).
+
+yo
+ Alternative notification.
+
+# README ends here

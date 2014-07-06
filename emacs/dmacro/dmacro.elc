@@ -1,0 +1,257 @@
+
+(defvar dont-bind-my-keys)
+
+(if (not (and (boundp (quote dont-bind-my-keys)) dont-bind-my-keys)) (progn (global-set-key "d" (quote insert-dmacro)) (global-set-key "l" (quote dmacro-wrap-line)) (global-set-key "r" (quote dmacro-wrap-region)) (global-set-key "f" (quote dmacro-fill-in-blanks))))
+
+(autoload (quote build-dmacro) "dmacro-bld" "\
+Interactively build a new dmacro." t nil)
+
+(autoload (quote write-dmacro-file) "dmacro-bld" "\
+Save all dmacros and abbrevs to FILE." t nil)
+
+(defvar auto-dmacro-alist nil "\
+*An alist of filename patterns and corresponding dmacro names.  Each
+element looks like (REGEXP . DMACRO-SYMBOL) just like auto-mode-alist.
+Visiting a new file whose name matches REGEXP causes the dmacro to be
+inserted into the buffer.
+  This facility is a functional super-duper-set of autoinsert.el.")
+
+(defvar dmacro-prefix-char "~" "\
+*The character searched for by dmacro-expand-region when looking for
+text to modify.  The value of this variable must be a string containting
+a single character.")
+
+(defconst dmacro-month-names (quote ("January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December")) "\
+*Used by the macro ~(month). Change these to suit your language or tastes.")
+
+(defvar dmacro-rank-in-initials nil "\
+*If non-nil the ~(user-initials) macro will include (Jr, Sr, II, etc...)
+when such a rank is present in the user's name.")
+
+(defvar dmacro-prompt t "\
+*When this variable is t, Dmacro prompts the user in the minibuffer
+when expanding interactive dmacros (i.e. dmacros containing the
+~(prompt) function.  If this variable is nil, it won't do anything
+with the blanks until the user types the to-be-substituted text in the
+buffer and invokes \\[dmacro-fill-in-blanks].
+  If this variable is not t and not nil, Dmacro will grab the words
+immediately preceding point.  So if you forget to type them before
+invoking the dmacro, it will blindly use whatever it finds in the
+buffer.")
+
+(defvar dmacro-on-abbrev nil "\
+*Dmacro is an overgrown hack built on top of Emacs' Abbrev Mode.
+Some people like to use both abbrevs and dmacros at the same time, but
+don't want their dmacros auto-expanded.  If DMACRO-ON-ABBREV is nil,
+dmacros will only be expanded if they were accessed through one of the
+Dmacro commands: \\[insert-dmacro], \\[dmacro-wrap-line] or \\[dmacro-wrap-region].")
+
+(defvar dmacro-verbose-list)
+
+(defvar dmacro-table)
+
+(defvar dmacro-point nil)
+
+(defvar dmacro-marks nil)
+
+(defvar dmacro-expanding nil)
+
+(defvar dmacro-last-prompt)
+
+(defvar dmacro-ts)
+
+(defvar dmacro-fn)
+
+(defvar dmacro-extra nil)
+
+(defvar dmacro-goto-mark nil)
+
+(defvar dmacro-strings nil)
+
+(defvar dmacro-recurse nil)
+
+(defvar dmacro-fix-marks nil)
+
+(defvar dmacro-fix-marks-on nil)
+
+(defvar dmacro-doclist nil)
+
+(defvar dmacro-functions (list (quote (@ :alias point)) (quote (year :alias (chron) 20)) (quote (mon :alias (chron) 4 7)) (quote (date :alias (chron) 8 10)) (quote (day :alias (chron) 0 3)) (quote (hour24 :alias (chron) 11 13)) (quote (min :alias (chron) 14 16)) (quote (sec :alias (chron) 17 19)) (cons (quote ~) (function (lambda nil dmacro-prefix-char))) (cons (quote prompt) (function (lambda (mods &optional itemname &rest args) (if (null itemname) (setq itemname dmacro-last-prompt) (setq dmacro-last-prompt itemname)) (dmacro-save-string t mods itemname args) (concat "<" (symbol-name itemname) ">")))) (cons (quote if) (function (lambda (mods expr then &optional else) (if (eq (quote prompt) (car expr)) (progn (dmacro-save-string nil (list then else mods) (or (car (cdr expr)) dmacro-last-prompt) (cdr (cdr expr))) nil) (if (dmacro-funcall expr) (dmacro-funcall then) (dmacro-funcall else)))))) (cons (quote dmacro) (function (lambda (tem &optional pointP) (let ((dmacro-recurse (or pointP (quote protect-point)))) (insert-dmacro (symbol-name tem))) nil))) (quote (chron . dmacro-ts)) (cons (quote month-num) (function (lambda nil (format "%2d" (dmacro-month-num))))) (cons (quote month) (function (lambda nil (nth (1- (dmacro-month-num)) dmacro-month-names)))) (cons (quote hour) (function (lambda nil (let* ((r (string-to-int (substring (dmacro-ts) 11 13))) (h (if (zerop (% r 12)) 12 (% r 12)))) (format "%2d" h))))) (cons (quote ampm) (function (lambda nil (if (<= 12 (string-to-int (substring (dmacro-ts) 11 13))) "pm" "am")))) (quote (file-long . dmacro-fn)) (cons (quote file) (function (lambda nil (file-name-nondirectory (dmacro-fn))))) (cons (quote file-dir) (function (lambda nil (file-name-directory (dmacro-fn))))) (cons (quote file-name) (function (lambda nil (let ((fn (file-name-nondirectory (dmacro-fn)))) (substring fn 0 (string-match "\\.[^.]*$" fn)))))) (cons (quote file-ext) (function (lambda nil (let* ((fn (file-name-nondirectory (dmacro-fn))) (i (string-match "\\.[^.]*$" fn))) (if i (substring fn (1+ i))))))) (cons (quote insert-file) (function (lambda (x) (condition-case data (save-excursion (set-buffer (get-buffer-create " dmacro-temp")) (erase-buffer) (insert-file x) (setq x (buffer-substring (point-min) (point-max))) (erase-buffer)) (error (if (eq (quote file-error) (car data)) (message "Warning: couldn't read file: %s" x) (signal (quote error) data)) (setq x nil))) x))) (quote (user-id . user-login-name)) (quote (user-name . user-full-name)) (quote (user-initials . dmacro-initials)) (cons (quote point) (function (lambda nil (if (not (eq dmacro-recurse (quote protect-point))) (setq dmacro-point (point)) (dmacro-push-mark)) nil))) (quote (mark . dmacro-push-mark)) (cons (quote shell) (function (lambda (cmd) (save-excursion (set-buffer (get-buffer-create " dmacro-temp")) (erase-buffer) (shell-command cmd t) (setq cmd (buffer-substring (point-min) (point-max)))) cmd))) (cons (quote eval) (function (lambda (form) (let ((res (eval form))) (if (or (null res) (stringp res)) res (prin1-to-string res))))))))
+
+(defun insert-dmacro (name) "\
+Insert the dmacro NAME.  It prompts for NAME.
+When called from Lisp programs, NAME is a string; if NAME is not a valid
+dmacro in the current buffer, then NAME itself is inserted." (interactive (byte-code "ÂÀÁ\"C‡" [nil t dmacro-minibuffer-read] 3)) (byte-code "ÀˆÁÁÅ ˆcˆÆ *‡" [nil t executing-macro dmacro-expanding name abbrev-prefix-mark expand-abbrev] 3))
+
+(defun dmacro-wrap-region (dmacro marker beg end) "\
+Put the text between point and mark at the point location in DMACRO.
+E.g., if the selected text is \"abc\" and the dmacro expands to \"{ <p> }\",
+where <p> is the location of the cursor, the result would be \"{ abc }\".
+With a prefix argument, put the text at a marker location instead of point.
+The marker used is the number of the marker indicated by the prefix argument.
+If there aren't that many markers in the dmacro, the first one is used." (interactive (byte-code "ÃÀÁ\"
+Ä Å F‡" [nil t current-prefix-arg dmacro-minibuffer-read region-beginning region-end] 7)) (byte-code "ÀˆÉ\"Ê\"ˆË!*‡" [nil t current-prefix-arg dmacro-extra beg end dmacro-goto-mark marker dmacro buffer-substring delete-region insert-dmacro] 4))
+
+(defun dmacro-wrap-line (dmacro marker) "\
+Put the text on the current line at the point location in DMACRO.
+E.g., if the line contains \"abc\" and the dmacro expands to \"{ <p> }\",
+(where <p> is the location of the cursor), the result would be \"{ abc }\".
+With a prefix argument, put the text at a marker location instead of point.
+The marker used is the number of the marker indicated by the prefix argument.
+If there aren't that many markers in the dmacro, the first one is used." (interactive (byte-code "ÃÀÁ\"
+D‡" [nil t current-prefix-arg dmacro-minibuffer-read] 3)) (byte-code "ÀˆŠÇ ˆ`)`ZÈŠÉÊ!ˆ`)$ˆ`Zb*‡" [nil t current-prefix-arg end loc dmacro marker end-of-line dmacro-wrap-region forward-to-indentation 0] 7))
+
+(defun dmacro-fill-in-blanks nil "\
+When DMACRO-PROMPT is nil, users invoke this function after inserting a
+dmacro.  It then backward deletes the appropriate number of sexps from 
+the buffer and fills in the blanks in the dmacro." (interactive) (byte-code "ÁˆÂÃ!?… ÄÅ!ˆÆÂÃ!A@@@!p=?…$ ÄÇÈ!\")ˆÉÊ`!!‡" [last-buff nil symbol-plist dmacro-strings error "No blanks to fill in from the last dmacro." marker-buffer "Error: Last dmacro expansion was in %s." buffer-name dmacro-process-strings dmacro-get-words] 9))
+
+(defun add-dmacros (tabname definitions) "\
+Just like define-abbrev-table, except: existing abbrevs are not destroyed
+and if HOOK (see below) is unspecifed, \"dmacro-expand\" is assumed.
+  TABNAME is a symbol, DEFINITIONS is a list of elements of the form (NAME 
+TEXT &optional EXPANSION-QUALIFIER DOCUMENTATION).  Valid values for EXPANSION-
+QUALIFIER are: nil, expand and indent." (byte-code "ÂÃ\"ˆÁ‡" [definitions nil mapcar (lambda (d) (byte-code "ÂJÃ	8Ä	8Å	8Æ	8%‡" [tabname d define-dmacro 0 1 2 3] 7))] 3))
+
+(defun define-dmacro (table name text expansion-qualifier doc) "\
+Define a single dmacro.  Takes 5 args.  TABLE is the
+abbrev-table to define it in.  NAME is a string, the name of the
+dmacro.  TEXT is the actual dmacro text string. EXPANSION-QUALIFIER
+is the hook to run on the text (valid values are dmacro-expand,
+dmacro-indent or nil (which is the same as dmacro-expand)).  DOC,
+if non-nil, is a string describing the dmacro." (byte-code "ÁÊËÌ=ƒ Í‚% ?† Î=ƒ# Ï‚% $\"Ð
+\"ƒ> Ñ	\"‚H 
+	BB‰+‡" [abbrevs-changed nil sym table name text expansion-qualifier doccons dmacro-doclist doc abbrev-symbol define-abbrev indent dmacro-indent expand dmacro-expand assq setcdr] 7))
+
+(defun define-dmacro-table (tabname definitions) "\
+Just like add-dmacros, but it makes sure the table is empty first.
+We recommend that you use add-dmacros so that you can define dmacros in
+multiple files and not worry about one trashing the other." (byte-code "ÁÄ
+J!ˆÅ
+\")‡" [abbrevs-changed nil tabname definitions clear-abbrev-table add-dmacros] 4))
+
+(defun dmacro-command (TEM1 &optional TEM2 FUNCNAME) "\
+In true Lisp fashion, this is a function building function.
+It generates a function that inserts and expands a dmacro, TEM1.  If optional 
+second arg TEM2 is specified, then the generated function will also insert and
+expand TEM2 when preceded by \\[universal-argument].  If optional third arg FUNCNAME, a symbol,
+is specified, then a real live function is generated suitable for use with
+\\[describe-function], \\[execute-extended-command], etc.
+
+DMACRO-COMMAND is intended to bind dmacros to keys.  E.g.:
+ (global-set-key \"\\C-ct\" 
+                 (dmacro-command \"dstamp\" \"dtstamp\" 'insert-timestamp)))
+ (define-key c-mode-map \"\\C-cf\" (dmacro-command \"fordown\" \"forup\"))" (byte-code "	… ÆÇKÈ
+É… ÊËE%ƒ( ÌÍÎÏÐÑÒ
+FD%‚1 ÌÍÅÓÐ
+D%	ƒ> 	Mˆ	‚? *‡" [docdef FUNCNAME TEM1 TEM2 fundef nil apply concat "Insert and expand the dmacro named \"" "\"." "
+With a prefix arg, use \"" "\" instead." list lambda (arg) (interactive "P") insert-dmacro if arg (interactive)] 12))
+
+(fset (quote dmacro-function) (symbol-function (quote dmacro-command)))
+
+(defmacro def-dmacro-function (name &rest body) (byte-code "ÂÃÄÄÅDÆ	GUƒ Å	@D‚ ÇÈ	BDEÃEE‡" [name body setq dmacro-functions cons quote 1 function lambda] 8))
+
+(defmacro def-dmacro-alias (&rest args) (byte-code "ÃÄÅÁ
+… 
+@Æ
+A@BBB
+AA‰ˆ‚ ˆÇD)ÄEE‡" [new nil args setq dmacro-functions append :alias quote] 7))
+
+(defun dmacro-expand nil "\
+Passed in as the HOOK argument to define-dmacro.
+Causes the dmacro to be expanded." (byte-code "† 	ƒ Ã
+`\"ˆÄ ‚ Å ‡" [dmacro-on-abbrev dmacro-expanding last-abbrev-location dmacro-expand-region dmacro-fix-marks-hack unexpand-abbrev] 4))
+
+(defun dmacro-indent nil "\
+Passed in as the HOOK argument to define-dmacro.
+Causes the dmacro to be expanded and then each line of the expanded
+text to be indented in a way appropriate to the buffer's major mode." (byte-code "† 	ƒ+ È ŠbˆÉ ˆ`)ÆÊ
+\"ˆË
+Ç#ˆÌ ˆÍ +‚- Î ‡" [dmacro-on-abbrev dmacro-expanding endpt boln last-abbrev-location dmacro-fix-marks-on t nil point-marker beginning-of-line dmacro-expand-region indent-region indent-according-to-mode dmacro-fix-marks-hack unexpand-abbrev] 8))
+
+(defun dmacro-minibuffer-read (prompt confirm) (byte-code "	ÃÃÈG!…( … ÉÅ!ˆÊ† ËÌÃÃ%‰ˆ‚ ˆ+‡" [dmacro-table local-abbrev-table dmacro-verbose-list nil res t prompt confirm zerop beep completing-read "Dmacro: " dmacro-internal] 9))
+
+(defun dmacro-internal (str ignore action) (byte-code "?ƒ@ 
+… Ê
+\"Ê\"Æ	=†< Æ=†< Ë	\"†< ?†4 	…4 	GGWƒ; 	‚< *‚ Ì=ƒP 
+Í!)‚ Î
+…Y Ï
+\"Ï\"\"
+	;…n Ð	\"ƒy ÑÒ\"‚€ ‰	ˆ*‡" [action try1 dmacro-table str try2 global-abbrev-table t local-abbrev-table lis dmacro-verbose-list try-completion dmacro-common-prefix lambda abbrev-symbol append all-completions string-equal mapcar (lambda (x) (format "
+%s:	%s" x (or (let ((sym (abbrev-symbol x))) (and sym (cdr (assq sym dmacro-doclist)))) (abbrev-expansion x))))] 11))
+
+(defun dmacro-common-prefix (s1 s2) (byte-code "… 	?… † 	ˆG	G^Å
+W…& Æ\"Æ	\"U…1 T‰ˆ‚ ˆÇ!ƒ< Ä‚@ ÅO*‡" [s1 s2 len i nil 0 elt zerop] 6))
+
+(defun dmacro-fix-marks-hack nil (byte-code "?… 	… Å BÆ`‰ˆÇÈ	\"ˆb*‡" [dmacro-recurse dmacro-fix-marks my-mark-list mark-ring savep mark-marker nil mapcar (lambda (m) (byte-code "bˆÃÄ!ˆÅ
+\"	… Æ	`\")‡" [m badm my-mark-list skip-chars-forward " 	" dmacro-member set-marker] 5))] 4))
+
+(defun dmacro-member (elt list) (byte-code "ÀÁ‡" [got-it (byte-code "ÂÃ\"ˆÁ‡" [list nil mapcar (lambda (x) (byte-code "Â	\"… ÃÄ\"‡" [x elt equal throw got-it] 4))] 3)] 2))
+
+(setq find-file-hooks (cons (quote auto-dmacro) find-file-hooks))
+
+(defun auto-dmacro nil (byte-code "?…	 ÆÇ !…O 
+È!	…F É	@@\"…& ÊË	@A!!ƒB ÌË	@A!!ˆÍÅ!ˆÎÏË	@A!\"ˆÅ‚F 	A‰…N Åˆ‚ *‡" [buffer-read-only alist auto-dmacro-alist fn buffer-file-name nil zerop buffer-size file-name-sans-versions string-match abbrev-symbol symbol-name insert-dmacro set-buffer-modified-p message "New file. Inserted dmacro: %s"] 13))
+
+(defun dmacro-expand-region (start end) (byte-code "?… Ö×Á\"ˆÁÁÁ‰ˆØÙ \"ÁÁÚ	
+bˆ`W…3 ÛÌÁ$…“ `ÜÝfUƒH Þp!‚m ßàf!Uƒa áâ!ˆãä`\"!@‚m åâ!ˆãæf!!@ÁÁ#â8…„ çS`\"ˆè!…Ž c+ˆ‚& ˆ?…
+?…¡ ‰ˆ…¨ …Ú Gé!ZêëVƒÂ GS‚Ä \"@ìí
+!\"ˆ‰+ˆîï\"ˆ
+U…é `V?…ï 
+bˆ…ù ð!ˆ…ñÌ=?…ò
+!!,‡" [dmacro-recurse nil dmacro-point dmacro-marks dmacro-fix-marks endm end dmacro-ts dmacro-fn dmacro-last-prompt start dmacro-prefix-char t cmdbeg cmd text dmacro-goto-mark marknum ourmark newpoint dmacro-extra dmacro-prompt setplist dmacro-strings set-marker make-marker your-text search-forward dmacro-parse 40 read 119 char-syntax forward-word 1 read-from-string buffer-substring forward-char char-to-string delete-region dmacro-run prefix-numeric-value nthcdr 0 setcar copy-marker mapcar (lambda (m) (byte-code "ÃÁ\"ˆÄÂ\"‡" [m t nil push-mark set-marker] 4)) insert-before-markers dmacro-process-strings dmacro-get-words] 24))
+
+(defun dmacro-parse (cmd args mods) (byte-code "<… @<ƒ Ç@ÁA
+B#‚V ÁÁ<ƒ. @†) A‰‚1 ‰ˆÈ\"A‰ˆ<…D É@=ƒP ÇA
+#‚U 
+F*‡" [cmd nil mods func lookup args dmacro-functions dmacro-parse assq :alias] 7))
+
+(defun dmacro-run (cmd) (byte-code "ÁÂ@=† Ã@=ƒ ÄÅ8Æ8Ç8#‚% ÄÅ8Ç8\"Æ8Â@=#‡" [cmd dmacro-apply-modifiers prompt if apply 1 3 2] 7))
+
+(defun dmacro-apply-modifiers (text modlist forbid-trunc) (byte-code "?ƒ	 Ê‚· 	…µ 	@ËÌÌÌÌ
+…j Í
+@!ƒ: ƒ3 
+@‰‚7 
+@‰‚a Î
+@=ƒH È‰‚a Ï
+@=ƒY 
+A
+@‰‚a Ð
+@Ñ\"A‰ˆ
+A‰ˆ‚ ˆ…r 	?…y ÌÒÓˆË=?…… ÔÕ\"…Ÿ …– Ö×Ø!ÙØ!Z\"×Ø!ÌOP‰ˆ…ª Ú\"‰.ˆ	A‰ˆ‚	 ˆ‡" [text modlist modifiers pad caser mod-start mod-end sexps t forbid-trunc "" 32 nil numberp :sexp :pad assq ((:up . upcase) (:down . downcase) (:cap . capitalize)) (byte-code "	ƒ Æ
+Ã#ÆÅ#O‚ 
+O‰‡" [text sexps mod-start t mod-end nil dmacro-sexp-pos] 7) ((error (byte-code "À‡" [nil] 1))) string-match "^\\s-+" make-string match-end 0 match-beginning funcall] 13))
+
+(defun dmacro-sexp-pos (text count startP) (byte-code "…O ŠÅÆ!qˆÇ ˆÂÈ )ˆcˆÉWƒ! db‚# ebˆÊ!ˆ?…0 ÉWƒ9 ÊË!‚J ÉY…J ÊË!ˆ…J ÌË!ˆ`eZ)‡" [count emacs-lisp-mode-hook nil text startP get-buffer-create " dmacro-temp" erase-buffer emacs-lisp-mode 0 forward-sexp 1 backward-sexp] 9))
+
+(defun dmacro-process-strings (words) (byte-code "ŠÇÈ!Â…™ ÉA@!@ƒ @‚8 ÊA@†' Ë@†4 ÌÍ@!!ÎPAA#A‰…‰ @@bˆÏ@A@ƒb ÐÑÍ@!G\\!ˆÒ@AAÂ#‚„ Ò?†l ÓÔ\"ƒx ÕÖ@8!‚~ ÕÑ@8!×@8Â#!ˆ‚9 +ˆAAA‰ˆ‚ *ˆØÈÂ\")‡" [fillin executing-macro nil blanks prompt str words symbol-plist dmacro-strings reverse apply read-string capitalize symbol-name ": " insert-before-markers delete-char 2 dmacro-apply-modifiers string= "" dmacro-funcall 3 4 setplist] 18))
+
+(defun dmacro-get-words (end) (byte-code "ŠŒbˆÇe\"ˆÈÉÊ!GË\"ÄÌ	!?…N Í ˆ`Î`fUƒ, Ï‚- ÐÑ ˆÒ\\`Z\"B‰*ˆÍ ˆ	S‰ˆ‚ ˆÓ`\"ˆ+))‡" [end cnt loc lis nil s trim narrow-to-region / symbol-plist dmacro-strings 2 zerop backward-sexp 34 1 0 forward-sexp buffer-substring delete-region] 11))
+
+(defun dmacro-ts nil (byte-code "† Á ‰‡" [dmacro-ts current-time-string] 3))
+
+(defun dmacro-fn nil (byte-code "† Á † Â ‰‡" [dmacro-fn buffer-file-name buffer-name] 4))
+
+(defun dmacro-save-string (typeflag val itemname args) (byte-code "ÄN?… ÅÄ	C#ˆÅÄÆ 
+BBÄNB#‡" [itemname args typeflag val dmacro-strings put point-marker] 8))
+
+(defun dmacro-funcall (sexp) (byte-code ";ƒ	 ‚' ?ƒ Á‚' ÃÄÁÁ#!ÅÆ
+\"ƒ% Á‚& 
+)‡" [sexp nil res dmacro-run dmacro-parse string= ""] 5))
+
+(defun dmacro-month-num nil (byte-code "ÀÁÂ ÃÄOÅ\"Æ\"T‡" [/ string-match dmacro-ts 4 7 "JanFebMarAprMayJunJulAugSepOctNovDec" 3] 6))
+
+(defun dmacro-initials nil "\
+Given a user name, return a string containing the user's initials.
+See also the description of the variable DMACRO-RANK-IN-INITIALS, which 
+affects the behavior of this function." (byte-code "Å ÆÃ	…% ÇÈ	T#‰ˆ	…! 
+		TOP‰ˆ‚ ˆ
+GÉV…4 ÇÊËÌ!#ƒP ƒI 
+ÍÉ!TËÉ!OP‚M 
+ÌÆO‚Q 
++‡" [fullname index res nil dmacro-rank-in-initials user-full-name -1 string-match "\\<" 1 "\\([IVX]+\\|[JS]R\\)\\.?$" match-end 0 match-beginning] 10))
+
+(defun dmacro-push-mark nil (byte-code "… n?… ŠÄÅ!ˆn)… Æ`!	B‰ˆÆ`!
+B‰ˆÃ‡" [dmacro-fix-marks-on dmacro-fix-marks dmacro-marks nil skip-chars-backward " 	" copy-marker] 5))
+
+(provide (quote dmacro))

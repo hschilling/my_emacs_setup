@@ -1,0 +1,483 @@
+This file contains news, mostly user-visible but sometimes also programming.
+
+------------------------------------------------------------------------------
+VERSION 1.21 -- 1998/09/27
+
+- Individual source-file dependencies are now captured using the `require' and
+  `provide' mechanisms.
+
+- The command `M-x emacs-uptime' displays in the mode line when Emacs was
+  started and a breakdown in terms of days, hours, minutes and seconds.  Also
+  displayed are the numbers of buffers and files.
+
+- The command `M-x make' is now an alias to `M-x compile'.
+
+- The Verilog mode is now implemented using verilog-mode.el by Michael
+  McNamara <mac@surefirev.com>.  The old verilog.el is no longer distributed
+  with this library.
+
+- The imported package `edbm' is no longer distributed with this library.
+
+- The `hideshow' package now does state save/restore.
+
+  When in programming modes, hideshow is configured to save state on buffer
+  kill as well as to not hide comments when doing `hs-hide-all'.
+
+- The `adhoc' feature is now available.  See the files adhoc.el and
+  adhoc.adhoc for more info.
+
+- The variable `C-l-gravity' which controls how the screen is redrawn when
+  `C-l' is pressed is now dependent on window height.
+
+- A bug was fixed in the administrative macro `ttn-with-RCS-file', whereby the
+  free variable `file' was being set incorrectly.  This change does not affect
+  users.
+
+- The command `print-buffer-local-variables' now uses `pp', a pretty printer.
+
+- The variable `custom-file', which names the file where the custom.el keeps
+  its state, used to name a file in the home directory.  This is now renamed
+  `ttn-elisp-home'/lisp/customized-state.el, part of ttn's personal elisp
+  library.  This change is to facilitate export.
+
+- The variable `bookmark-default-file', which names the file where bookmark.el
+  keeps its state, used to name a file in the home directory.  This is now
+  renamed `ttn-elisp-home'/lisp/bookmarks.bmk, part of ttn's personal elisp
+  library.  This change is to facilitate export.
+
+- RMAIL is no longer supported as the preferred mail reader.  Instead, there
+  is now support for the VM mail reader.  The key sequence `C-x r' no longer
+  runs the command `rmail'.  The sequence `C-x v m' now runs `vm'.  (You can
+  also do `Mx vm'.)
+
+  In VM, keys have been rebound.  Here is a list (old keys in parens):
+    x	vm-expunge-folder    (#)
+    s	vm-save-folder	     (S)
+    o	vm-save-message	     (s)
+
+- For sending mail, when the variable `ttn-jammed-from' is bound to a string,
+  that value is jammed in the "Reply-to:" header, but only if a "Reply-to"
+  header is not already in set in the buffer.  This jamming support has also
+  been added to `mail-send-hook'.
+
+- The variable `view-scroll-auto-exit' is now `t', which means that when
+  viewing a file (or buffer), scrolling past the end will exit the buffer
+  instead of signalling an error.
+
+- The administrative macro `ttn-with-RCS-file' is now autoloaded.
+
+------------------------------------------------------------------------------
+VERSION 1.20 -- 1998/08/20
+
+- The command `xscreensaver-command-deactivate' is no longer available.  A new
+  command `xscreensaver-command-restart' is available.  The general command
+  `xscreensaver-command' now takes a string of args to pass.
+
+- A new command `find-files' calls find(1) and then allows interactive file
+  selection.  Selection is similar to `query-replace': `y' or `SPC' accepts;
+  `n' or `DEL' rejects; `.' accepts one then stops; `!' accepts the rest and
+  `q' quits.  The command asks for a wildcard to pass to find(1).
+
+- The command `reset-x-bell' now consults ~/.xsession-common instead of
+  ~/.xsession.
+
+- Using `makefile-mode' calls `my-prog-env', which now handles source wrapping
+  for that mode correctly.
+
+- The list displayed by `munge-root-window' handles the new `bg-shell-command'
+  buffer name convention.
+
+- A bug was fixed in `fortunate-loop' that relies on this library's binding
+  for `M->'.
+
+- The `bury-buffer' command for `M-_' now understands prefix arg to rename the
+  buffer by prefixing a space.  This makes `electric-buffer-list' not notice
+  it.  To see the buffer, use `C-x b SPC' and then one or more TABs to invoke
+  completion.
+
+- In programming modes, the key `f10' is now bound to the same command as the
+  sequence `C-c M-C-h'.  This command does "here" searching.  See below for
+  its introduction.
+
+- The buffer created by `bg-shell-command' now has a name that is easier to
+  read.  The buffer name is made from: "*bg job* CMD".
+
+------------------------------------------------------------------------------
+VERSION 1.19 -- 1998/07/06
+
+- The AUTHORS file in the distribution now attributes the authors for imported
+  source (stuff under lisp/import).
+
+- When reading mail, headers that begin w/ "Resent-" are now not initially
+  shown.  You can toggle showing all the headers by using the `t' command.
+
+- A new command `run-guile-gtk' is available.  It, predictably, runs
+  guile-gtk in a new buffer named "*guile-gtk*".
+
+- The command `print-previous-revision', useful for files under version
+  control, now takes care to render RCS tags in the file immutable.  This
+  makes the buffer where the file is rendered safer in some senses.
+
+- The new command `C-l-gravity' sets the var `C-l-gravity' to whatever
+  window-line point is currently at.  This makes adapting `C-l' behavior to
+  different situations very easy.
+
+------------------------------------------------------------------------------
+VERSION 1.18 -- 1998/06/02
+
+- Running the normal hook `hs-minor-mode-hook' (when turning on hideshow minor
+  mode) now binds `C-c L' to `hs-hide-level', `C-c o' to `hs-save-state', and
+  `C-c i' to `hs-restore-state'.
+
+  More fundamentally, the hideshow in this library (latest: 4.12) is now based
+  off of the one distributed in FSF Emacs 20.2.  Modifications have been made
+  to re-enable state save/restore and `hs-hide-level'.
+
+- A bug was fixed in the auto-editing amusement (invoked by `M-x ae') that
+  caused it not to run at all.
+
+------------------------------------------------------------------------------
+VERSION 1.17 -- 1998/05/06
+
+- Fix bug in command `set-font-at-point' which was causing whitespace in the
+  buffer to be improperly considered as part of the font name.
+
+- The source file base64.el is now named ttn-base64.el so that w3-mode (in
+  xemacs, and with its own base64.el) would work.  (This mode provides a www
+  browser and other services.)
+
+- The PLL spreadsheet now has a parameter `b-range' to indicate the binning
+  range (in MHz).
+
+- The `home' and `end' keys have been rebound to `delete-other-windows' and
+  `delete-window', respectively, and `pause' does `split-window-vertically'.
+
+- The startup behavior of changing directory to `~' and finding ~/.todo is now
+  disabled.  Whatever directory you are in will be the default one.
+
+- Mouse button 3 on the modeline now does what `C-x C-k' does, namely, kills
+  the buffer and closes the window.  If a prefix arg is given, the buffer is
+  instead buried.
+
+- The new command `clone-frame' creates another frame with the same properties
+  as the current one.  The related command `clone-frame-just-text' works in a
+  similar way, but the new frame does not have a minibuffer (the bottom-most
+  line is the mode-line).
+
+- The new command `toggle-case-fold-search' controls whether or not searches
+  (eg, those started using `C-s') should be case sensitive.  This command
+  toggles the variable `case-fold-search', which when t makes searching case
+  insensitive.
+
+------------------------------------------------------------------------------
+VERSION 1.16 -- 1998/02/16
+
+- The new variable `ttn-select-global-keys' controls what global keys are
+  rebound when loading keys.el.  Briefly, two forms are recognized:
+	(only KEY1 KEY2 ...)
+  and	(except KEY1 KEY2 ...)
+
+  These forms permit and restrict, respectively, rebinding for the specified
+  keys.  An example of a key specification is "\C-n", normally bound to
+  `next-line', or "\M-\C-n", normally bound to `forward-list'.
+
+  Because key bindings tends to be a largely personal issue, the default value
+  of `ttn-select-global-keys' is `(only)', which effectively disables all key
+  rebindings done by loading keys.el.  Do `C-h v ttn-select-global-keys' for
+  more info.
+
+- A bug was fixed in the command `multi-shell' which caused spurious
+  initialization when switching to a pre-existing shell.
+
+- You can interact w/ a spreadsheet for tuning PLL input numbers by doing `M-x
+  pll-ss'.  A buffer is prepared with the parameters.  After editing the
+  parameters, type `C-c C-c' to form a table and bin the entries by 5.  Type
+  `C-h m' in the spreadsheet buffer for more info.  WARNING: The actual
+  formula is incorrect at this time.
+
+- Files ending in ".th" are now edited using `scheme-mode'.
+
+- The command `what-defun-am-i-in' normally bound to `M-?' in programming
+  modes, now understands Scheme mode.
+
+- Maintenance commands `ttn-make-autoload-file', `ttn-make-subdirs-file' and
+  `ttn-make-readme-files' are now available.  These are probably not useful
+  w/o the RCS subdirectories.
+
+- In comint and derived modes, `M-C-g' now runs the command `go'.
+
+------------------------------------------------------------------------------
+VERSION 1.15 -- 1998/01/22
+
+- Apparently, Emacs 20 did away w/ the Dired bindings for `*', `/' and `@'.
+  These are now restored.
+
+- You can now run locate(1) by doing `M-x locate'.  From a program, `locate'
+  accepts a string to concat w/ "locate" to form the command passed to the
+  shell.  See `shell-command'.
+
+- The "go-file" programming environment convention is now in place.  This
+  convention applies to sessions where there is an active inferior command
+  interpreter (via `comint-mode').  Typing `M-x go' arranges for the command
+  interpreter to load `go-file'.  For some programming modes this is now bound
+  to `M-C-g'.
+
+  Currently, the convention is: the go-file's first toggle-able enable (point
+  of control) is called the "load bit".
+
+  Two commands are now available to manipulate this bit: `glt' and `glf',
+  whose names are acronyms for "go load true" and "go load false".
+
+- Source code commonly grows in its data.  Tags on where to add additional
+  entries into a table typically look like the comment "Add data here.".  This
+  is a conventional editing target, part of the programming philosophy, so to
+  speak.  All applicable source in this library now follows this convention.
+
+  For programming modes using `my-prog-env', the key sequence `C-c M-C-h' now
+  does a search for the regular expression "here[.!]$".  The search reports if
+  no such tag is found, and also reports when it wraps to the beginning of the
+  buffer.
+
+  The punctuation after "here" affords some syntax that helps the search.  (We
+  allow some chance for excitement, after all.)
+
+- In GNUS, the summary buffer responds to `[' and `]' by scrolling the window
+  horizontally left and right, respectively.
+
+- The command `M-x turn-on-gnuserv' turns on whichever version of server is
+  available to the current Emacs.  (Lucid Emacs uses "gnuserv" proper, whereas
+  FSF Emacs uses the older "server" package.  We call both "gnuserv" here.)
+  Turning on a server allows other processes to derive use from the currently
+  running Emacs.
+
+  For further information, look at these manual pages: emacscient(1),
+  gnuattach(1), gnuclient(1).
+
+- For programming modes, the sequence `C-c d' inserts a date and time stamp.
+  The stamp is formatted w/ the string bug: "%Y.%m%d.%T%z".  Representative
+  output would be, e.g., "1997.1107.21:34:10-0800".
+
+- Under a windowing system that supports different fonts, you can use the
+  command `M-x xlsfonts' to select one as the default font.  If point is at a
+  valid font name, you can set it as default by `M-x set-font-at-point'.  If
+  it turns out point is not on a valid font name, Emacs will call `xlsfonts'
+  for you to choose.
+
+- When using `isearch', in a similar way that `C-w' works for words, the key
+  `C-y' works for structured expressions.  See the command `forward-sexp' for
+  more information.  (Note that this works also for single symbols.)
+
+- A bug was fixed in the command `electric-buffer-list'.  The display was not
+  correctly substituting environment variables.  Now it does.
+
+For programming:
+
+- The function `idx-of' returns the zero-based index of an item found in a
+  list.  Comparison is done w/ `equal'.  E.g., (idx-of 3 '(5 4 3)) => 2.
+
+- The new variable `emacs-type' records either `lucid' or `fsf'.  Some people
+  think "FSF Emacs" is derogatory, but I disagree.  (IMHO, "Lucid Emacs" just
+  sounds better, anyway -- the obvious development paradigm difference is of
+  academic debate. :->)
+
+  The function `emacs-version=' no longer exists, but in its place is a more
+  useful `emacs-version-at-least'.
+
+- Alias `d.' to `defun'.  This is to help elisp-scheme unification.
+
+------------------------------------------------------------------------------
+VERSION 1.14 -- 1998/01/04
+
+- A bug was fixed where `C-a' in scheme-mode and inferior-scheme-mode did the
+  wrong thing.
+
+- A bug was fixed in the command `M-x help-show-headers', normally bound to
+  `C-h h', in which the keybindings in the *Headers* buffer were not being set
+  correctly.
+
+  The regexp used to discern headers now are more robust -- headers can have
+  whitespace and the string to be displayed in the selection window need not
+  start w/ a comment.
+
+  Typing `q' in the selection window now closes the window.
+
+- A bug was fixed for `M-x run-guile' and `M-x run-guile-tcltk' where the
+  variable `scheme-buffer' was not being set to point to the newly created
+  buffer, preventing use of the commands `scheme-send-definition' (normally
+  bound to `C-M-x' in Scheme mode) and `scheme-send-definition-and-go'
+  (normally bound to `M-m' in Scheme mode).
+
+- `M-o' now ignores iconified frames.
+
+For programming:
+
+- The function `line-at-point' is now re-implemnted using `beginning-of-line'
+  and `end-of-line' rather than a regexp search.
+
+------------------------------------------------------------------------------
+VERSION 1.13 -- 1997/12/26
+
+- For both GNU Emacs and XEmacs, the directories /usr/info, /usr/local/info
+  and ~/local/info are always added to the info search path.
+
+- Directory environment variables "l", "ll", "L" and "LL" are set to various
+  load-path favorites.  Variable "lo" is now known as "ll".  New variables are
+  "c" and "s" for ~/codebits and scheme directories, respectively.
+
+- When using Emacs 20 or higher, the file ~/.emacs-custom is loaded.  The
+  variable `custom-file' is set to this for further use by `M-x customize'.
+
+- Files ending in ".thud" are now edited using `scheme-mode'.
+
+- When sending mail, a BCC header entry is automatically created with yourself
+  as the recipient.  This is controlled by `mail-self-blind', a variable.  You
+  may delete the field if you don't want all outgoing mail to be copied to you
+  w/o reflecting it in other recipients' mail.
+
+------------------------------------------------------------------------------
+VERSION 1.12 -- 1997/12/25
+
+- The command `munge-root-window' now also lists background jobs that can be
+  killed by selecting them, in addition to the normal commands.  Also, Emacs
+  now uses a window at the bottom of the screen to receive input (similar to
+  `electric-buffer-list') instead of clearing the current window.
+
+- When using RMAIL to read mail, you can now search back through the entire
+  mail file for a regular expression by typing `M-r', which runs the command
+  `rmail-search-backward'.  Emacs will ask you for a regexp to find.  You can
+  type `RET' to accept the previous entry, or enter a new regexp.  If the
+  search is successful, the RMAIL buffer will show the message found with
+  point at the regexp.
+
+- The command `M-x bg-shell-command' now accepts a prefix arg.  If non-nil,
+  Emacs will switch to the buffer controlling the background job so that you
+  can watch its progress.  Currently, you need to type `M-<' then `M->' to see
+  anything useful because of (not-yet understood) weirdness w/ the mark.  If
+  the prefix arg is nil, show nothing.
+
+- A new command `M-x ping' allows you to ping a host.  Emacs switches to the
+  buffer doing the ping so that you can watch.  A numerical prefix arg sets
+  the interval of the ping, which defaults to 1 second.
+
+- Turning on hilit19 via `M-x turn-on-hilit19' no longer overrides the
+  definitions of `recenter', `yank' and `yank-pop'.
+
+- A bug was fixed that set `Info-default-directory-list' for XEmacs wrongly.
+
+- On a Linux console, you now can browse the different console fonts via a
+  Dired extension.  Type `M-x browse-console-fonts'.  In the resulting dired
+  buffer, hitting `RET' will run setfont(1) on the file at point.  (Be careful
+  where you put point, or you may render your console unusable.)
+
+- When using `my-prog-env', you can surround the source text in the buffer w/
+  RCS tags w/ `M-#'.  Default styles are elisp, shell and c++; these are also
+  used by related modes.  For example, scheme-mode will use elisp style.
+
+- The mode-line no longer contains references to MULE or frames.  These items
+  take up space that is better used for displaying other information.
+
+- This library now includes sure-tags.el v1.0, by Bob Glickstein
+  <bobg@zanshin.com>.  This package advises tag-related commands in useful
+  ways.  For example, you can automatically update arbitrary TAGS files,
+  before referencing them.
+
+For programming:
+
+- The function `border' is now available.  It has this kind of behavior:
+
+    (border 3 '(1 2 3 4 5))
+    => (2 3 4 5)
+
+  Basically, given break ELEMENT, return a sublist that starts with the
+  element right before.  This is useful if conjunction w/ `setcdr' for list
+  splitting.
+
+- The command `source-wrap-elisp-style' has been generalized to `source-wrap'.
+
+------------------------------------------------------------------------------
+VERSION 1.11 -- 1997/12/15
+
+- You can now start and interact with a guile process through buffer *guile*
+  using the command `run-guile'.  This is based on `run-scheme' and the buffer
+  prepared is based on `comint-mode', so `M-p' (`comint-previous-input') and
+  `M-n' (`comint-next-input') work as expected.  Type `C-h f comint-mode RET'
+  for more information.  The executable "guile" should be in your PATH
+  environment variable.
+
+- Similarly, `M-x run-guile-tcltk' is now available.
+
+- The command `insert-separator' now knows about Scheme mode.
+
+- You can get a root shell by typing `M-x su-shell'.  Emacs prompts you for
+  the root password and with it sets up a `multi-shell'.  Current directory
+  remains unchanged.
+
+- Under `ttn-elisp-home', new files lisp/README and lisp/low-stress/README
+  provide brief (but not yet comprehensive) descriptions of the elisp code
+  found therein.  Also, ./README now has "ls -lRt" output, not just .el files.
+
+- In `shell-mode' and for `run-scheme', `run-lisp', `run-guile' and
+  `run-guile-tcltk', the key `C-a' now moves the cursor to the end of the
+  prompt (where you would normally begin typing) rather than to the absolute
+  beginning of the line.
+
+- A bug was fixed in the command `dired-compile-last-change-log' used from
+  Dired mode, whereby Emacs was failing to find the "Working file" RCS tag.
+
+- The command `C-x m' composes mail, as before, but now queries you first for
+  contents of the "To:" and "Subject:" fields.  Typing RET in response is OK.
+  A buffer is created with the name "*mail TO*", where TO was your response.
+  If this buffer already exists, confirm if you want to kill it.  If so, the
+  new TO and SUBJECT are inserted; otherwise you may continue w/ the previous
+  mailing.
+
+  As usual `C-c C-c' sends the mail and buries the buffer.
+
+------------------------------------------------------------------------------
+VERSION 1.10 -- 1997/12/04
+
+- When using `my-prog-env', you can find out what defun, function or module
+  you are "in" with `M-?', which calls `what-defun-am-i-in'.  Emacs looks
+  backward in the buffer for the name of the syntactic unit and informs you in
+  the minibuffer.  This is useful if the name is not on the screen and you
+  don't want to leave your current place in the buffer.
+
+- The code to cleanup Macintosh "Word" documents no longer asks for a file.
+  Instead, it operates on the current buffer.  Also, the command has been
+  renamed to `macintosh-word-cleanup' and is autoloaded.
+
+- The amusement that calls fortune(1) no longer is started automatically by
+  this library.  You can invoke it manually using `M-x fortunate-loop', which
+  also causes `fortunate-loop' to be hooked into the idle timer.
+
+For programming:
+
+- The aliases `_u', `_s', `_swb' and `_swbow' are no longer available.  You
+  should use `force-mode-line-update', `sit-for', `switch-to-buffer' and
+  `switch-to-buffer-other-window', respectively.
+
+- Directory environment variables "l", "lo" and "L" are set only for
+  interactive use.
+
+------------------------------------------------------------------------------
+VERSION 1.9
+
+- The command `what-defun-am-i-in' now autoloads correctly.
+
+- If you are in a buffer you can mail it to someone using `C-x RET RET'.  This
+  will place you in the mail buffer with the contents of the original buffer
+  as the mail.  Fill out the "To" and "Subject" fields and type `C-c C-c' to
+  send.  After sending, Emacs will return to the original buffer.
+
+  If you want to cancel the mail, just kill the mail buffer.  Alternatively,
+  you can use `C-x b RET' to get back to the original buffer.
+
+- This NEWS file, normally kept in `ttn-elisp-home', is now available.
+
+------------------------------------------------------------------------------
+VERSION 1.8
+
+First public release.  This includes many many many features and probably a
+few bugs.  :->
+
+------------------------------------------------------------------------------

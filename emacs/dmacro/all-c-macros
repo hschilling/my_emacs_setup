@@ -1,0 +1,49 @@
+Possible completions are:
+
+b:	curly braces (ideal for dmacro-wrap-line) 
+case:	case/break
+
+d:	#define                    
+dot-h:	comment block for the top of a .h file
+
+dstamp:	user id and date           
+dtstamp:	user id, date and time
+
+fdesc:	Standard function comment block 
+for:	for statment
+
+fori:	for statement (increments variable i) 
+foriefficient:	for statement (decrements i efficiently)
+
+func:	function definition (prompts for type and name) 
+hifndef:	used by dot-h macro
+
+history:	a new HISTORY entry in the masthead 
+i:	simple #include directive
+
+if:	if statement               
+ifd:	#ifdef/#endif (no prompting)
+
+ifddebug:	print debugging info to stderr 
+ifdnever:	#ifdef NEVER (ideal for use with dmacro-wrap-region)
+
+ife:	if/else statement          
+ifmal:	malloc with check for error (prompts for var type)
+
+ifor:	interactive for statment (prompts for variable name) 
+iifd:	#ifdef/#endif (prompts for condition)
+
+iifed:	#ifdef/#else/#endif (prompts for condition) 
+iifnd:	#ifndef/#endif (prompts for condition)
+
+iinclude:	interactive #include with #ifndef (prompts for file name) 
+main:	an empty main() function with args
+
+mal:	call to malloc (prompts for var type) 
+masthead:	commment block for the top of a .c file
+
+p:	printf                     
+switch:	switch statement
+
+void:	(void)                     
+while:	while statement

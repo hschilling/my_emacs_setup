@@ -1,0 +1,24 @@
+The subdirectory lisp/import contains work by:
+
+	lispdir.el		Ashwin Ram (Ram-Ashwin@cs.yale.edu)
+				Dave Sill (de5@ornl.gov)
+				David Lawrence (tale@uunet.uu.net)
+				Noah Friedman (friedman@ai.mit.edu)
+				Joe Wells (jbw@cs.bu.edu)
+				Dave Brennan (brennan@gnu.ai.mit.edu)
+				Eric Raymond (eric@snark.thyrsus.com)
+				Daniel Quinlan (quinlan@gnu.ai.mit.edu)
+
+	mic-paren.el		Mikael SjÅˆdin (mic@docs.uu.se)
+
+	scroll-in-place.el	Eric Eide (eeide@cs.utah.edu)
+
+	sure-tags.el		Bob Glickstein (bobg@zanshin.com)
+
+	verilog-mode.el		Michael McNamara (mac@surefirev.com)
+
+	vm mail system		Kyle E. Jones
+				Heiko Muenkel
+				Free Software Foundation
+
+Everything else is by Thien-Thi Nguyen (ttn@netcom.com).

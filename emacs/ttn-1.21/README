@@ -1,0 +1,255 @@
+This directory and its children are ttn's environment, an Emacs lisp library.
+See file NEWS for a description of changes for each release, both at user- and
+programmer-level.  See VERSION for the current release version.  See COPYING
+for licensing information.  See AUTHOR for maintenance correspondance.
+
+To use this library, put in your ~/.emacs:
+
+  (setq ttn-elisp-home "~ttn/codebits/elisp/ttn/") ; should end w/ slash
+  (load-file (format "%sttn.el" ttn-elisp-home))
+
+Below is "ls -lRtG" RCS-pruned and here is code that does it:
+
+;; Make sure buffer is writeable, then put cursor [HERE] and do
+;; `M-x eval-defun RET'.  Don't forget to save!
+(save-excursion
+  (re-search-forward "^-+$")
+  (let ((b (1+ (match-end 0))))
+    (delete-region b (point-max))
+    (goto-char b)
+    (message "Hang on...") (sit-for 0)
+    (insert
+     (shell-command-to-string "ls -lRtG")
+     "\n# " (file-name-nondirectory
+	     (buffer-file-name))
+     " ends here\n")
+    (goto-char b)
+    (while (re-search-forward "^\\S-*RCS:\n" (point-max) t)
+      (insert " [pruned]\n")
+      (while (not (looking-at "^$"))
+	(kill-line 1)))))
+
+;; Do not erase this line.  Edits below this line will be lost.
+------------------------------------------------------------------------------
+total 66
+-rw-r--r--   1 ttn         12244 Sep 27 00:50 README
+drwxr-xr-x   2 ttn          1024 Sep 27 00:50 RCS
+drwxr-xr-x   8 ttn          1024 Sep 27 00:50 lisp
+-r--r--r--   1 ttn           404 Sep 27 00:50 ttn-subdirs.el
+drwxr-xr-x   3 ttn          1024 Sep 27 00:44 doc
+-rw-r--r--   1 ttn             5 Sep 27 00:41 VERSION
+-rw-r--r--   1 ttn         21902 Sep 27 00:40 NEWS
+-r--r--r--   1 ttn           994 Sep 26 23:41 ttn-macros.el
+-r--r--r--   1 ttn           705 Sep 26 13:03 AUTHORS
+-r--r--r--   1 ttn          1456 Sep 11 12:14 Makefile
+-r--r--r--   1 ttn         18123 Aug 20 05:02 COPYING
+-r--r--r--   1 ttn          2165 Aug 19 15:44 ttn.el
+
+RCS:
+ [pruned]
+
+lisp:
+total 208
+-r--r--r--   1 ttn         45582 Sep 27 00:50 loaddefs.el
+drwxr-xr-x   2 ttn          1024 Sep 27 00:50 RCS
+drwxr-xr-x   3 ttn          1024 Sep 27 00:42 prog-env
+drwxr-xr-x   3 ttn          3072 Sep 27 00:42 low-stress
+-r--r--r--   1 ttn          1328 Sep 27 00:42 README
+-r--r--r--   1 ttn          5112 Sep 26 23:16 vars.el
+-r--r--r--   1 ttn          2647 Sep 26 23:01 do-it-now.el
+drwxr-xr-x   4 ttn          1024 Sep 26 13:01 import
+-r--r--r--   1 ttn         36529 Sep 25 21:14 hideshow.el
+drwxr-xr-x   2 ttn          1024 Sep 20 14:31 test
+-r--r--r--   1 ttn         13848 Sep 18 23:41 hooks.el
+-rw-r--r--   1 ttn         30969 Sep 18 02:48 fsf-1.27-hideshow.el
+-rw-r--r--   1 ttn         35079 Sep 13 14:48 hideshow.el.orig
+-r--r--r--   1 ttn          4662 Sep 12 02:28 admin.el
+-rw-r--r--   1 ttn           939 Sep 11 12:35 bookmarks.bmk
+-rw-r--r--   1 ttn           533 Sep 11 11:56 customized-state.el
+-r--r--r--   1 ttn          9709 Sep  4 14:55 keys.el
+-r--r--r--   1 ttn          2297 Aug 19 15:59 tuckey-holdcursor.el
+-r--r--r--   1 ttn          2195 Aug 19 15:46 if-window-system.el
+-r--r--r--   1 ttn           696 Aug 19 15:45 emacs-vers.el
+drwxr-xr-x   3 ttn          1024 Aug 19 15:45 ahm
+
+lisp/RCS:
+ [pruned]
+
+lisp/prog-env:
+total 23
+drwxr-xr-x   2 ttn          1024 Sep 27 00:42 RCS
+-r--r--r--   1 ttn          1257 Sep 27 00:42 README
+-r--r--r--   1 ttn          1257 Sep 26 23:48 what-defun-am-i-in.el
+-r--r--r--   1 ttn          1685 Sep 26 23:47 rcs-to-cvs.el
+-r--r--r--   1 ttn          3432 Sep 26 23:47 my-prog-env.el
+-r--r--r--   1 ttn          4305 Sep 26 23:47 help-show-headers.el
+-r--r--r--   1 ttn          2986 Sep 26 23:46 go.el
+-r--r--r--   1 ttn          2306 Sep 26 23:46 find-files.el
+-rw-r--r--   1 ttn           209 Jun  3 05:07 hack.el
+
+lisp/prog-env/RCS:
+ [pruned]
+
+lisp/low-stress:
+total 150
+drwxr-xr-x   2 ttn          3072 Sep 27 00:42 RCS
+-r--r--r--   1 ttn          5496 Sep 27 00:42 README
+-r--r--r--   1 ttn          1294 Sep 27 00:38 emacs-uptime.el
+-r--r--r--   1 ttn           610 Sep 27 00:08 source-wrap-shell-style.el
+-r--r--r--   1 ttn           598 Sep 27 00:08 source-wrap-elisp-style.el
+-r--r--r--   1 ttn           582 Sep 27 00:08 source-wrap-c++-style.el
+-r--r--r--   1 ttn           722 Sep 27 00:08 ping.el
+-r--r--r--   1 ttn           862 Sep 27 00:07 phone.el
+-r--r--r--   1 ttn          1878 Sep 27 00:07 insert-separator.el
+-r--r--r--   1 ttn          2010 Sep 27 00:04 yo.el
+-r--r--r--   1 ttn           913 Sep 27 00:04 xscreensaver-command.el
+-r--r--r--   1 ttn           996 Sep 27 00:04 xmsg.el
+-r--r--r--   1 ttn           736 Sep 27 00:04 word-at-point.el
+-r--r--r--   1 ttn          1648 Sep 27 00:04 vt220-term.el
+-r--r--r--   1 ttn           705 Sep 27 00:03 updating-shell-command.el
+-r--r--r--   1 ttn           708 Sep 27 00:03 turn-on-mouse-avoidance-mode.el
+-r--r--r--   1 ttn           722 Sep 27 00:03 turn-on-mic-paren.el
+-r--r--r--   1 ttn           850 Sep 27 00:03 turn-on-hilit19.el
+-r--r--r--   1 ttn           695 Sep 27 00:03 turn-on-gnuserv.el
+-r--r--r--   1 ttn           577 Sep 27 00:03 toggle-vars.el
+-r--r--r--   1 ttn           721 Sep 27 00:02 symbol-at-point.el
+-r--r--r--   1 ttn          1291 Sep 27 00:02 surround-w-if-block.el
+-r--r--r--   1 ttn          1093 Sep 27 00:02 su-shell.el
+-r--r--r--   1 ttn           735 Sep 27 00:02 strip.el
+-r--r--r--   1 ttn          1118 Sep 27 00:02 split-into-3-windows.el
+-r--r--r--   1 ttn           763 Sep 27 00:02 source-wrap.el
+-r--r--r--   1 ttn          1014 Sep 27 00:01 set-keys.el
+-r--r--r--   1 ttn          1738 Sep 27 00:01 set-font-at-point.el
+-r--r--r--   1 ttn           601 Sep 27 00:01 scroll-LR-by-20.el
+-r--r--r--   1 ttn          1325 Sep 27 00:01 saved-shell-command.el
+-r--r--r--   1 ttn          1201 Sep 27 00:01 run-guile.el
+-r--r--r--   1 ttn           732 Sep 27 00:00 revert-some-buffers.el
+-r--r--r--   1 ttn          1199 Sep 27 00:00 reset-x-bell.el
+-r--r--r--   1 ttn          1660 Sep 27 00:00 reset-emacs-font.el
+-r--r--r--   1 ttn          1126 Sep 27 00:00 print-previous-revision.el
+-r--r--r--   1 ttn          1333 Sep 27 00:00 print-buffer-local-variables.el
+-r--r--r--   1 ttn           647 Sep 27 00:00 previous-buffer.el
+-r--r--r--   1 ttn           766 Sep 27 00:00 praise.el
+-r--r--r--   1 ttn          4275 Sep 26 23:59 pll-spreadsheet.el
+-r--r--r--   1 ttn          2157 Sep 26 23:59 ong-da.el
+-r--r--r--   1 ttn           597 Sep 26 23:58 narrowed-to-page-p.el
+-r--r--r--   1 ttn           671 Sep 26 23:58 my-term-fixups.el
+-r--r--r--   1 ttn          1268 Sep 26 23:58 my-tags.el
+-r--r--r--   1 ttn          3135 Sep 26 23:58 munge-root-window.el
+-r--r--r--   1 ttn          1557 Sep 26 23:58 multi-shell.el
+-r--r--r--   1 ttn          1074 Sep 26 23:57 map-table.el
+-r--r--r--   1 ttn           614 Sep 26 23:57 mail-this-buffer.el
+-r--r--r--   1 ttn          1386 Sep 26 23:57 macintosh-word-cleanup.el
+-r--r--r--   1 ttn           537 Sep 26 23:57 locate.el
+-r--r--r--   1 ttn          1101 Sep 26 23:57 ln-mode.el
+-r--r--r--   1 ttn           635 Sep 26 23:57 line-at-point.el
+-r--r--r--   1 ttn           963 Sep 26 23:57 insert-time-stamp.el
+-r--r--r--   1 ttn           584 Sep 26 23:56 idx-of.el
+-r--r--r--   1 ttn          1025 Sep 26 23:56 gzip-or-gunzip-from-dired.el
+-r--r--r--   1 ttn           710 Sep 26 23:56 gud-cont-display.el
+-r--r--r--   1 ttn           874 Sep 26 23:55 give-me-a-scratch-buffer-now.el
+-r--r--r--   1 ttn           544 Sep 26 23:55 from.el
+-r--r--r--   1 ttn           723 Sep 26 23:55 forward-page-ignore-narrow.el
+-r--r--r--   1 ttn          1657 Sep 26 23:55 fortunate-loop.el
+-r--r--r--   1 ttn           796 Sep 26 23:55 find-many-files.el
+-r--r--r--   1 ttn          1238 Sep 26 23:54 eval-last-page.el
+-r--r--r--   1 ttn           697 Sep 26 23:54 dired-wipe-unseeables.el
+-r--r--r--   1 ttn          1569 Sep 26 23:54 dired-compile-last-change-log.el
+-r--r--r--   1 ttn           545 Sep 26 23:54 describe-this.el
+-r--r--r--   1 ttn         10483 Sep 26 23:54 delayed-checkin.el
+-r--r--r--   1 ttn          4786 Sep 26 23:53 codeline.el
+-r--r--r--   1 ttn           883 Sep 26 23:52 clone-frame.el
+-r--r--r--   1 ttn          1785 Sep 26 23:52 check-calendar-file.el
+-r--r--r--   1 ttn           722 Sep 26 23:52 ch-rcs-state.el
+-r--r--r--   1 ttn          1477 Sep 26 23:52 c-macro-expand-and-clean.el
+-r--r--r--   1 ttn           808 Sep 26 23:51 browse-console-fonts.el
+-r--r--r--   1 ttn           669 Sep 26 23:51 brb.el
+-r--r--r--   1 ttn           754 Sep 26 23:51 border.el
+-r--r--r--   1 ttn           778 Sep 26 23:51 bnum.el
+-r--r--r--   1 ttn          3419 Sep 26 23:51 blink.el
+-r--r--r--   1 ttn           934 Sep 26 23:51 bg-shell-command.el
+-r--r--r--   1 ttn           741 Sep 26 23:50 backward-page-ignore-narrow.el
+-r--r--r--   1 ttn          1272 Sep 26 23:50 append-to-nth-buffer.el
+-r--r--r--   1 ttn          1044 Sep 26 23:50 another-line.el
+-r--r--r--   1 ttn          1636 Sep 26 23:49 ae.el
+-r--r--r--   1 ttn          3507 Sep 26 23:41 adhoc.el
+-r--r--r--   1 ttn          3864 Sep 26 23:12 ttn-base64.el
+-r--r--r--   1 ttn           469 Nov 13  1997 h-grep.el
+
+lisp/low-stress/RCS:
+ [pruned]
+
+lisp/import:
+total 1064
+drwxr-xr-x   2 ttn          1024 Sep 26 13:01 RCS
+-rw-rw-r--   1 ttn        183979 Sep 14 16:38 verilog-mode.el
+-rw-r--r--   1 ttn         30824 Sep  8 21:25 vm-startup.elc
+-rw-r--r--   1 ttn            86 Sep  4 13:44 vm.elc
+-rw-r--r--   1 ttn          3418 Sep  4 13:44 vm-search.elc
+-rw-r--r--   1 ttn        104674 Sep  4 13:44 vm-autoload.elc
+drwxr-xr-x   2 ttn          1024 Sep  4 13:43 pixmaps
+-rw-r--r--   1 ttn         10883 Aug  4 13:14 eval-expr.el
+-rw-r--r--   1 ttn         10456 Apr 20 05:25 tapestry.elc
+-rw-r--r--   1 ttn         13207 Apr 20 05:25 vm-window.elc
+-rw-r--r--   1 ttn         14219 Apr 20 05:25 vm-virtual.elc
+-rw-r--r--   1 ttn        130110 Apr 20 05:25 vm-vars.elc
+-rw-r--r--   1 ttn           738 Apr 20 05:25 vm-version.elc
+-rw-r--r--   1 ttn          1618 Apr 20 05:25 vm-user.elc
+-rw-r--r--   1 ttn         13868 Apr 20 05:25 vm-undo.elc
+-rw-r--r--   1 ttn         14918 Apr 20 05:25 vm-toolbar.elc
+-rw-r--r--   1 ttn          4400 Apr 20 05:25 vm-thread.elc
+-rw-r--r--   1 ttn         17868 Apr 20 05:25 vm-summary.elc
+-rw-r--r--   1 ttn         11014 Apr 20 05:25 vm-sort.elc
+-rw-r--r--   1 ttn         13043 Apr 20 05:25 vm-save.elc
+-rw-r--r--   1 ttn         33608 Apr 20 05:25 vm-reply.elc
+-rw-r--r--   1 ttn         15246 Apr 20 05:25 vm-pop.elc
+-rw-r--r--   1 ttn         13640 Apr 20 05:25 vm-page.elc
+-rw-r--r--   1 ttn         11385 Apr 20 05:25 vm-motion.elc
+-rw-r--r--   1 ttn         11773 Apr 20 05:25 vm-mouse.elc
+-rw-r--r--   1 ttn         15507 Apr 20 05:25 vm-misc.elc
+-rw-r--r--   1 ttn          8013 Apr 20 05:25 vm-minibuf.elc
+-rw-r--r--   1 ttn         68772 Apr 20 05:25 vm-mime.elc
+-rw-r--r--   1 ttn         13221 Apr 20 05:25 vm-message.elc
+-rw-r--r--   1 ttn         33083 Apr 20 05:25 vm-menu.elc
+-rw-r--r--   1 ttn          1339 Apr 20 05:25 vm-license.elc
+-rw-r--r--   1 ttn         13388 Apr 20 05:25 vm-mark.elc
+-rw-r--r--   1 ttn         73881 Apr 20 05:25 vm-folder.elc
+-rw-r--r--   1 ttn          7019 Apr 20 05:25 vm-edit.elc
+-rw-r--r--   1 ttn         17740 Apr 20 05:25 vm-digest.elc
+-rw-r--r--   1 ttn          4819 Apr 20 05:25 vm-easymenu.elc
+-rw-r--r--   1 ttn          7265 Apr 20 05:25 vm-delete.elc
+-r--r--r--   1 ttn          7594 Jan  3  1998 sure-tags.el
+-r--r--r--   1 ttn         63285 Jan  3  1998 scroll-in-place.el
+-r--r--r--   1 ttn         21866 Jan  3  1998 mic-paren.el
+-r--r--r--   1 ttn         20729 Jan  3  1998 lispdir.el
+
+lisp/import/RCS:
+ [pruned]
+
+lisp/import/pixmaps:
+total 0
+
+lisp/test:
+total 19
+-rw-r--r--   1 ttn          3020 Jun 22 08:48 obj.lisp
+-rw-r--r--   1 ttn         12899 Jun 22 08:48 JmlText.java
+-rw-r--r--   1 ttn          1244 Jun 22 08:47 CacheFileManger.java
+
+lisp/ahm:
+total 3
+-r--r--r--   1 ttn          1033 Aug 19 15:45 base.el
+drwxr-xr-x   2 ttn          1024 Aug 19 15:45 RCS
+
+lisp/ahm/RCS:
+ [pruned]
+
+doc:
+total 9
+drwxr-xr-x   2 ttn          1024 Sep 27 00:44 RCS
+-r--r--r--   1 ttn          7128 Sep 27 00:44 adhoc.adhoc
+-rw-r--r--   1 ttn           655 Sep 25 22:20 ttn.adhoc
+
+doc/RCS:
+ [pruned]
+
+# README ends here

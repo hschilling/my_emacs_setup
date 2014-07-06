@@ -1,0 +1,172 @@
+;;; ID: adhoc.adhoc,v 1.6 1998/09/27 07:44:18 ttn Exp
+
+;;; Copyright (C) 1998 Thien-Thi Nguyen
+;;; This file is part of ttn's personal elisp library, released under GNU
+;;; GPL with ABSOLUTELY NO WARRANTY.  See the file COPYING for details.
+
+;;; Description: Show off adhoc.el using adhoc.el.
+
+(require 'ttn)
+(require 'adhoc)
+
+;;;---------------------------------------------------------------------------
+(setq adhoc.adhoc-dir (expand-file-name "lisp/low-stress" ttn-elisp-home))
+
+(switch-to-buffer "*scratch*")
+(delete-other-windows)
+
+(adhoc-display
+ "Welcome to adhoc.adhoc, the script that shows off adhoc.el, an emacs-lisp
+package written by an obviously pedantic person.  Sit back and relax, since
+currently adhoc.el does not have any interactive support.  At any point
+during the presentation, feel free to hit `C-g' to quit.
+
+This description applies to version 1.4 of adhoc.el.
+This message will go away in 22.8 seconds.")
+
+;;;---------------------------------------------------------------------------
+(adhoc-find-file (expand-file-name "adhoc.el" adhoc.adhoc-dir))
+(beginning-of-buffer)
+
+(adhoc-display
+ "This is the actual source file for adhoc.  Source isn't so bad once you
+get to know it a bit.  Note the copyright, license reference and RCS tags.
+
+The copyright ensures everybody knows you own the source.
+The license tells other people how they may use the source.
+The RCS tags help you keep track of which revision of source you're
+playing with.
+
+Viva source!")
+
+(adhoc-search-forward "Commentary")
+(adhoc-display
+ "This source follows some of the conventions used in the elisp library
+distributed with Emacs, namely Commentary and Code stylized comments (three
+semicolons plus space prefix, and colon suffix.
+
+The rest of the file is divided into four sections: variables, support
+functions, entry points and load-time actions.  This structuring generally
+supports the principle that dependent things are defined after what they
+depend on.  Not a big deal, but once established, it becomes habitual to hit
+`C-r' to \"review\" a previous definition (using `C-g' to return).")
+
+;;;---------------------------------------------------------------------------
+(adhoc-search-forward "Variables")
+(adhoc-display
+ "Let's first look at variables..." 2)
+
+(adhoc-search-forward "adhoc-output-buffer" t t t)	; no-bol no-recenter
+(adhoc-display
+ "The variable `adhoc-output-buffer' is currently under user control, but
+in the future we may want to restrict its access (or at least control it more
+than now).
+
+It's a string because most elisp functions that deal with buffers handle
+buffer objects as well as strings.  Polymorphism in action, cool.")
+
+(adhoc-search-forward "adhoc-orig-buffer" t t t)
+(adhoc-display
+ "The variable `adhoc-orig-buffer' is currently not used, but probably
+will be in the future...")
+
+(adhoc-search-forward "adhoc-temp-buffers" t t t)
+(adhoc-display
+ "Buffers are the big deal in Emacs, it seems.  You can have many of them
+and use them to localize all kinds of state, including text.  Because they are
+so useful, they accumulate and clutter up.  Here, we use this variable to list
+those buffers we deem to be temporary.  This makes cleanup a one-step process,
+ie, very simple.")
+
+;;;---------------------------------------------------------------------------
+(adhoc-search-forward "Support functions")
+(adhoc-display "Now for the support functions..." 2)
+
+(adhoc-search-forward "fun adhoc-find-adhoc-output-window")
+(adhoc-display
+ "This function originally was part of `adhoc-output', and was ripped
+out to stand on its own when I realized the same code could be used in
+`adhoc-clean-up'.   Often it is easy to recognize similar patterns when
+one is lazy.
+
+The implementation is not the cleanest, as it involves a search.  In
+fact, if anyone can show me a better way, I'd be glad to use it.")
+
+(adhoc-search-forward "macro adhoc-output")
+(adhoc-display
+ "Used a macro here because it is an environment change, of sorts.
+Proably better if it had been named along the lines of `with-output-to...'
+since that is traditional (and more descriptive).
+
+The only thing to note is that `adhoc-orig-buffer' is saved before
+entering the `with-output-to-temp-buffer' form.  Preserving where
+one came from can be implemented more generally using a stack, and
+as the complexity of adhoc scripts increases, this may be required.")
+
+(adhoc-search-forward "fun adhoc-wait")
+(adhoc-display
+ "The other two support functions: `adhoc-wait' and `adhoc-orig-buffer'
+are quite simple at this time.  They are included as a hint to future
+expansion possibilities.  For example, `adhoc-wait' may eventually do
+other things besides deleting the window, such as dispatching on input
+events, or even calling a user hook.  Similarly, `adhoc-orig-buffer'
+may end up as a stack-accessor function.")
+
+;;;---------------------------------------------------------------------------
+(adhoc-search-forward ";;; Entry points")
+(adhoc-display "Now for the entry points...")
+
+(adhoc-search-forward "fun adhoc-display")
+(adhoc-display
+ "This is used heavily (eg., in adhoc.adhoc).
+
+This function definitely will be expanded in the future along two
+dimensions: number of args and arg type.  It should be analogous to the
+Emacs primitive `insert'.  Also, the speedup factor can be moved to a
+user-accessible value so that simple elisp constructs such as:
+
+	(let ((adhoc-speedup 1.5))
+	  (adhoc-display ...)
+	  (adhoc-display ...))
+
+can be used.  The approach will then be towards more configurability.")
+
+(adhoc-search-forward "fun adhoc-search-forward" 5)
+(adhoc-display
+ "This function is also used heavily.  In fact, there is no analogous
+backwards search function at this time because adhoc.el itself can be
+described easily by going forward.  But, generalization possibility
+requires us to add (at some point) that kind of support.
+
+The three optional args are on the edge of combinational explosion,
+not a good idea.  One of the args masks another, so that can be used as
+an excuse.  Still, I would rather see it become cleaner.")
+
+(search-backward "adhoc-find-file")
+(adhoc-display
+ "Oh yeah, `adhoc-find-file' should be noted.  But there's really not much
+to say about it." 1.5)
+
+(adhoc-search-forward "fun adhoc-clean-up" t t t)
+(adhoc-display
+ "The trivial call to `adhoc-output' is somewhat blecherous.  The rationale
+behind it is to make sure the `adhoc-output-buffer' window was visible so
+that it could be safely found (and deleted).  This goes back to the issue
+of a search being required all the time.  Ugh!")
+
+;;;---------------------------------------------------------------------------
+(goto-char (point-max))
+(recenter)
+
+(adhoc-display
+ "Well, that's it.  Pretty simple so far.  But there already are some
+extesibility issues.  One idea is to introduce processing in the display
+so that animations and other illustrative movement can be done.  Or maybe
+adhoc.el can play nicely with Info pages.  We'll just have to see." 1.5)
+
+(adhoc-display "BYE!" 0)
+
+;;;---------------------------------------------------------------------------
+(adhoc-clean-up)
+
+;;; adhoc.adhoc,v1.6 ends here

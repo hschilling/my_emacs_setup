@@ -1,0 +1,112 @@
+
+(require (quote dmacro))
+
+(if (not (and (boundp (quote dont-bind-my-keys)) dont-bind-my-keys)) (global-set-key "t" (dmacro-function "dstamp" "dtstamp" (quote insert-timestamp))))
+
+(setq auto-dmacro-alist (append (quote (("\\.c$" . masthead) ("\\.h$" . dot-h))) auto-dmacro-alist))
+
+(def-dmacro-alias dn ((month-num) :pad nil) dd ((chron) 8 10 :pad nil) dy ((chron) 22))
+
+(add-dmacros (quote global-abbrev-table) (quote (("dstamp" " -~((user-initials) :down)~dn/~dd/~dy." nil "user id and date") ("dtstamp" " -~((user-initials) :down)~dn/~dd/~dy ~((hour) :pad nil):~min~ampm." nil "user id, date and time"))))
+
+(add-dmacros (quote c-mode-abbrev-table) (quote (("i" "#include <~@.h>
+" nil "simple #include directive") ("iinclude" "#ifndef ~((prompt file \"Header file name: \") :up)
+# include <~(prompt file).h>
+#endif /* ~((prompt file) :up) */
+" nil "interactive #include with #ifndef (prompts for file name)") ("d" "#define " nil) ("ifd" "#ifdef ~@
+~(mark)
+#endif 
+" indent "#ifdef/#endif (no prompting)") ("ifdnever" "#ifdef NEVER
+~@
+#endif /* NEVER */
+" nil "#ifdef NEVER (ideal for use with dmacro-wrap-region)") ("ifddebug" "#ifdef DEBUG
+if (debuglevel >= ~(prompt debug \"Debug level: \") {
+(void) fprintf(stderr, \"DEBUG: ~@\\n\");
+(void) fflush (stderr);
+(void) getch ();
+}
+#endif /* DEBUG */" indent "print debugging info to stderr") ("iifd" "#ifdef ~(prompt constant \"#ifdef condition: \")
+~@
+#endif /* ~(prompt) */
+" nil "#ifdef/#endif (prompts for condition)") ("iifnd" "#ifndef ~(prompt constant \"#ifndef condition: \")
+~@
+#endif /* ~(prompt) */
+" nil "#ifndef/#endif (prompts for condition)") ("iifed" "#ifdef ~(prompt constant \"#ifdef condition: \")
+~@
+#else
+ ~(mark)
+#endif /* ~(prompt) */
+" nil "#ifdef/#else/#endif (prompts for condition)") ("b" "{
+~@
+}" indent "curly braces (ideal for dmacro-wrap-line)") ("switch" "switch (~@)
+{
+
+}" indent "switch statement") ("case" "case ~@:
+
+break;" indent "case/break") ("if" "if (~@)
+ ~(mark)
+" indent "if statement") ("ife" "if (~@)
+ ~(mark)
+else
+ ~(mark)
+" indent "if/else statement") ("for" "for (~@; ; )
+{
+ ~mark
+}
+" indent "for statment") ("fori" "for (i = 0; i < ~@; ++i)
+{
+ ~mark
+}
+" indent "for statement (increments variable i)") ("foriefficient" "for (i = ~@; --i >= 0; )
+{
+ ~mark
+}
+" indent "for statement (decrements i efficiently)") ("ifor" "for (~(prompt var \"Variable: \") = 0; ~prompt < ~@; ++~prompt)
+{
+ ~mark
+}
+" indent "interactive for statment (prompts for variable name)") ("while" "while (~@)
+{
+ ~mark
+}
+" indent "while statement") ("void" "(void)" indent) ("p" "(void) printf(\"~@\\n\"~mark);" indent "printf") ("ifmal" "if ((~@ = (~(prompt type \"Variable type: \") *) ~(dmacro malloc)(~(mark)sizeof(~(prompt)))) == NULLP(~(prompt)))
+" indent "malloc with check for error (prompts for var type)") ("mal" "= (~(prompt type \"Variable type: \") *) ~(dmacro malloc)(~@sizeof(~(prompt)));
+" indent "call to malloc (prompts for var type)") ("fdesc" "/**
+NAME:    
+  ~@
+PURPOSE:
+  ~mark
+ARGS:
+  > ~mark
+RETURNS:
+  < ~mark
+NOTES:
+  ~mark
+**/
+" expand "Standard function comment block") ("func" "~(prompt type \"Function type: \") ~(prompt name \"Function name: \")(~@)
+{
+~mark
+} /* ~(prompt name) */
+" indent "function definition (prompts for type and name)") ("main" "main(argc, argv)
+int argc;
+char **argv;
+{
+~@
+}
+" indent "an empty main() function with args") ("masthead" "/***
+   NAME
+     ~(file-name)
+   PURPOSE
+     ~point
+   NOTES
+     ~mark
+   HISTORY
+~(dmacro history)Created.
+***/
+
+" expand "commment block for the top of a .c file") ("history" "     ~(user-id) - ~(mon) ~dd, ~(year): " expand "a new HISTORY entry in the masthead") ("hifndef" "#ifndef ~((file-name) :up)
+#define ~((file-name) :up)
+
+~@
+
+#endif /* ~((file-name) :up) */" expand "used by dot-h macro") ("dot-h" "~(dmacro masthead t)~(dmacro hifndef)" expand "comment block for the top of a .h file"))))

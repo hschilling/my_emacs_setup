@@ -1,0 +1,63 @@
+Article 50 of gnu.emacs.sources:
+Path: lerc.nasa.gov!lerc.nasa.gov!magnus.acs.ohio-state.edu!math.ohio-state.edu!uwm.edu!vixen.cso.uiuc.edu!newsfeed.internetmci.com!swrinde!cssun.mathcs.emory.edu!news-feed-1.peachnet.edu!paperboy.wellfleet.com!news3.near.net!news.ner.bbnplanet.net!ctron-news.ctron.com!dur-news.ctron.com!dur-news.ctron.com!usenet
+From: feren@chugalug.ctron.com (The Cola Vampire)
+Newsgroups: gnu.emacs.sources
+Subject: zap-to-regexp
+Date: 08 May 1996 09:56:08 -0400
+Organization: Cabletron Systems Inc., Rochester NH
+Lines: 47
+Sender: feren@chugalug.ctron.com
+Message-ID: <e1loj3qnev.fsf@chugalug.ctron.com>
+Reply-To: feren@ctron.com
+NNTP-Posting-Host: chugalug.ctron.com
+X-Newsreader: Gnus v5.1
+
+
+zap-to-regexp will delete everything from point up to, but not
+including, the arg'th occurrence of a given regexp.  (like d/ and d?
+in vi)
+
+While posting on comp.emacs the other day I was reminded of this
+functionality which I always felt emacs should have.  Having a rare
+two minutes of spare time I decided to hack something together.  
+
+This is so small it hardly seems worth posting, but maybe someone will
+get some use out of this.
+
+-Andrew
+
+;;; This comes for free no need to redefine this here.
+;; (define-key esc-map "z" 'zap-to-char)
+(define-key esc-map "Z" 'zap-to-regexp) ; originally 'zap-to-char
+
+;;;
+;; zap-to-regexp
+;;
+;; Tue May 7, 1996 - feren@ctron.com (Andrew C. Feren)
+;; The basic code for this was borrowed from zap-to-char in simple.el
+;;
+(defun zap-to-regexp (arg regexp)
+  "Kill up to and including ARG'th occurrence of REGEXP.
+Goes backward if ARG is negative; error if REGEXP not found."
+  (interactive "p\nsZap to regexp: ")
+  (kill-region (point) (progn
+			 (search-forward-regexp regexp nil nil arg)
+			 ;; This line makes zap-to-regexp behave like
+			 ;; d/ and d? in vi (ie with forward deletion
+			 ;; the regexp is left intact).  Is this
+			 ;; really the right thing?  zap-to-char
+			 ;; dropped this behavior.  Was there a good
+			 ;; reason?  I like this behavior since I use
+			 ;; vi frequently enough to get some benefit
+			 ;; from the orthogonality.
+			 (if (>= arg 0) (search-backward-regexp regexp 1))
+			 ;; p.s.  Yes I know the '=' doesn't really do
+			 ;; much.
+			 (point)))
+  )
+-- 
+-Andrew Feren  (feren@ctron.com)
+ Cabletron Systems Inc.
+ Durham, NH
+
+

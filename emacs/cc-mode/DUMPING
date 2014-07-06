@@ -1,0 +1,132 @@
+DUMPING instructions for cc-mode.el 4.85
+Barry A. Warsaw <bwarsaw@cnri.reston.va.us>
+1994/09/10 17:30:12
+
+For now, you're going to be kind of on your own, but here are my, and
+other, experiences in dumping Emacs with cc-mode.  If you like
+cc-mode.el, you should lobby RMS to adopt it as *the* c-mode,
+c++-mode, and objc-mode for FSF's Emacs.  Note that if you are using
+XEmacs 19.11 (formerly Lucid Emacs), you do not need to do any of
+this.  XEmacs comes with cc-mode already dumped.  Yay!
+
+    Do this:
+
+    % cd <wherever_c_mode.el_is>
+    % mv c-mode.el c-mode.el.bak
+    % mv cc-mode.el c-mode.el
+
+    Then byte-compile c-mode.el to produce c-mode.elc
+
+    In both FSF 19.22 and Lucid 19.9 version.el is loaded too late in
+    the loadup.el file.  cc-mode.el depends on the value of
+    emacs-version so you need to move the load of version.el higher up
+    in the file.
+
+    You may need to crank up PURESIZE in src/pursize.h.  I found I had
+    to add about 14k, others have reported an increase of ~23k, but of
+    course YMMV.
+
+    Tell your users not to add the f/makunbound's or autoloads to
+    their .emacs files, since they'll now get cc-mode for free.
+
+    In Lucid 19.9, loaddefs.el contains a lot of automatically
+    generated autoload definitions which will cause warnings when it
+    finds pointers to doc strings.  You can either ignore these
+    warnings (they won't hurt you), or you can comment out the
+    autoloads for c++-mode and c-style.  Or you can regenerate the
+    automatic autoloads once you've moved c++-mode.el and c-mode.el
+    aside, but you'll have to figure this part out by yourself.
+
+    I've also been told that under FSF Emacs 19, you have to get rid
+    of the autoloads for cplus-md*.el since c++-mode.el has been
+    renamed. You should also do an update-directory-autoloads on the
+    lisp directory before you redump.
+
+
+Andrew Hall <fmrco!ahall@uunet.uu.net> provides this diff which
+applies to FSF's Emacs 19.25.90 loaddefs.el file.  This zaps the
+autoloads for cplus-md.el and c-mode.el so you shouldn't need to do an
+update-directory-autoloads.
+
+*** loaddefs.el.orig	Sat Jul  2 15:39:30 1994
+--- loaddefs.el	Thu Jul 21 12:23:22 1994
+***************
+*** 1959,2035 ****
+  
+  ;;;***
+  
+- ;;;### (autoloads (c++-mode) "cplus-md" "cplus-md.el" (11649 1462))
+- ;;; Generated autoloads from cplus-md.el
+- 
+- (autoload (quote c++-mode) "cplus-md" "\
+- Major mode for editing C++ code.  Very much like editing C code.
+- Expression and list commands understand all C++ brackets.
+- Tab at left margin indents for C++ code
+- Comments are delimited with /* ... */ {or with // ... <newline>}
+- Paragraphs are separated by blank lines only.
+- Delete converts tabs to spaces as it moves back.
+- \\{c++-mode-map}
+- Variables controlling indentation style:
+-  c-tab-always-indent
+-     Non-nil means TAB in C mode should always reindent the current line,
+-     regardless of where in the line point is when the TAB command is used.
+-     Default is t.
+-  c-auto-newline
+-     Non-nil means automatically newline before and after braces,
+-     and after colons and semicolons, inserted in C code.
+-  c-indent-level
+-     Indentation of C statements within surrounding block.
+-     The surrounding block's indentation is the indentation
+-     of the line on which the open-brace appears.
+-  c-continued-statement-offset
+-     Extra indentation given to a substatement, such as the
+-     then-clause of an if or body of a while.
+-  c-continued-brace-offset
+-     Extra indentation given to a brace that starts a substatement.
+-     This is in addition to c-continued-statement-offset.
+-  c-brace-offset
+-     Extra indentation for line if it starts with an open brace.
+-  c-brace-imaginary-offset
+-     An open brace following other text is treated as if it were
+-     this far to the right of the start of its line.
+-  c-argdecl-indent
+-     Indentation level of declarations of C function arguments.
+-  c-label-offset
+-     Extra indentation for line that is a label, or case or ``default:'', or
+-     ``public:'' or ``private:'', or ``protected:''.
+-  c++-electric-colon
+-     If non-nil at invocation of c++-mode (t is the default) colon electricly
+-     indents.
+-  c++-empty-arglist-indent
+-     If non-nil, a function declaration or invocation which ends a line with a
+-     left paren is indented this many extra spaces, instead of flush with the
+-     left paren.
+-  c++-friend-offset
+-     Offset of C++ friend declarations relative to member declarations.
+-  c++-member-init-indent
+-     Indentation level of member initializations in function declarations,
+-     if they are on a separate line beginning with a colon.
+-  c++-continued-member-init-offset
+-     Extra indentation for continuation lines of member initializations; NIL
+-     means to align with previous initializations rather than with the colon.
+- 
+- Settings for K&R, BSD, and Stroustrup indentation styles are
+-   c-indent-level                5    8    4
+-   c-continued-statement-offset  5    8    4
+-   c-continued-brace-offset                0
+-   c-brace-offset               -5   -8    0
+-   c-brace-imaginary-offset                0
+-   c-argdecl-indent              0    8    4
+-   c-label-offset               -5   -8   -4
+-   c++-empty-arglist-indent                4
+-   c++-friend-offset                       0
+- 
+- Turning on C++ mode calls the value of the variable `c++-mode-hook' with
+- no args if that value is non-nil." t nil)
+- 
+- ;;;***
+- 
+  ;;;### (autoloads (dabbrev-expand) "dabbrev" "dabbrev.el" (11577 36858))
+  ;;; Generated autoloads from dabbrev.el
+  
+--- 1959,1964 ----

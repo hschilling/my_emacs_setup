@@ -1,0 +1,39 @@
+This directory has elisp code for ttn environment.
+Most useful code is autoloaded.  See admin.el for more info.
+
+Below is reformatted "grep -n Description *.el" and here is code that does it:
+
+;; Make sure buffer is writeable, then put cursor [HERE] and do
+;; `M-x eval-defun RET'.  Don't forget to save!
+(save-excursion
+  (re-search-forward "^-+\n")
+  (insert "# " (file-name-nondirectory (buffer-file-name)) " ends here\n")
+  (delete-region (point) (point-max))
+  (goto-char (match-end 0))
+  (shell-command "grep -n Description *.el" t)
+  (when noninteractive
+    (count-lines-region (point) (point-max)))
+  (while (re-search-forward ".el:[0-9]+:;+ Description:" nil t)
+    (replace-match "\n") (end-of-line) (insert "\n")))
+
+;; Do not erase this line.  Edits below this line will be lost.
+------------------------------------------------------------------------------
+find-files
+ Find all files matching shell wildcards.
+
+go
+ Central command console procedures.  :->
+
+help-show-headers
+ Show headers in code, allowing two-window browsing.
+
+my-prog-env
+ Set up programming env the way I like it.
+
+rcs-to-cvs
+ Wrapper around contributed rcs-to-cvs script.
+
+what-defun-am-i-in
+ Determine where cursor is syntactically for several modes.
+
+# README ends here
